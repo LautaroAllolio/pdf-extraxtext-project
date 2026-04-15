@@ -9,7 +9,7 @@ from app.core.exceptions import (
 )
 
 def create_mocked_service():
-"""    Permite simular el comportamiento de la base de datos sin realizar llamadas reales"""
+    """    Permite simular el comportamiento de la base de datos sin realizar llamadas reales"""
     service = UserService()
     service._repository = MagicMock()
     service._repository.email_exists    = AsyncMock(return_value=False)
@@ -24,7 +24,7 @@ def create_mocked_service():
     return service
 
 async def test_create_user_password_corta():
-"""    Test de contraseña inválida(demasiado corta) simulado sin activar la base de datos, es decir mockeado"""
+    """    Test de contraseña inválida(demasiado corta) simulado sin activar la base de datos, es decir mockeado"""
     service = UserService()
     service._repository = MagicMock()
     service._repository.email_exists    = AsyncMock()
@@ -94,14 +94,16 @@ async def test_create_user_username_duplicado():
 
 async def test_create_user_exitoso():
     """valida todo cuando todo sale bien"""
+    from unittest.mock import patch
+
     service = UserService()
     service._repository = MagicMock()
     service._repository.email_exists    = AsyncMock(return_value=False)
     service._repository.username_exists = AsyncMock(return_value=False)
 
     usuario_mockeado = MagicMock()
-    usuario_mockeado.email    = "nuevo@test.com"
-    usuario_mockeado.username = "nuevouser"
+    usuario_mockeado.email           = "nuevo@test.com"
+    usuario_mockeado.username        = "nuevouser"
     usuario_mockeado.hashed_password = "$2b$algohash"
 
     service._repository.create = AsyncMock(return_value=usuario_mockeado)
@@ -112,7 +114,9 @@ async def test_create_user_exitoso():
         password="password123"
     )
 
-    resultado = await service.create_user(user_data)
+    # Mockeamos _hash_password para evitar llamar bcrypt real
+    with patch.object(service, "_hash_password", return_value="$2b$hashmockeado"):
+        resultado = await service.create_user(user_data)
 
     assert resultado.email    == "nuevo@test.com"
     assert resultado.username == "nuevouser"
@@ -120,7 +124,7 @@ async def test_create_user_exitoso():
     call_args = service._repository.create.call_args[0][0]
     assert "password"        not in call_args
     assert "hashed_password" in call_args
-    assert call_args["hashed_password"] != "password123"
+    assert call_args["hashed_password"] == "$2b$hashmockeado"
     assert call_args["hashed_password"].startswith("$2b$")
 
     assert "created_at" in call_args
