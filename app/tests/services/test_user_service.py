@@ -137,32 +137,3 @@ class TestUpdateUserIntegration:
         result = await user_service.update_user(user_id, update_data)
 
         assert result is user_test
-
-
-class TestDeleteUserIntegration:
-    """Tests de integración para delete_user que utiliza get_user_by_id."""
-
-    @pytest.mark.asyncio
-    async def test_verifies_user_exists_before_delete(
-        self, user_service, repository_mock, user_test
-    ):
-        """Verifica existencia del usuario antes de eliminar."""
-        user_id = str(user_test.id)
-        repository_mock.get_by_id = AsyncMock(return_value=user_test)
-        repository_mock.delete = AsyncMock()
-
-        await user_service.delete_user(user_id)
-
-        repository_mock.get_by_id.assert_called_once_with(user_id)
-
-    @pytest.mark.asyncio
-    async def test_deletes_user_and_returns_it(self, user_service, repository_mock, user_test):
-        """Elimina el usuario y lo retorna."""
-        user_id = str(user_test.id)
-        repository_mock.get_by_id = AsyncMock(return_value=user_test)
-        repository_mock.delete = AsyncMock()
-
-        result = await user_service.delete_user(user_id)
-
-        repository_mock.delete.assert_called_once_with(user_test)
-        assert result is user_test

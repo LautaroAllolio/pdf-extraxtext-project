@@ -97,4 +97,19 @@ class TestDeleteUser:
         repository_mock.get_by_id.assert_called_once_with(nonexistent_user_id)
         repository_mock.delete.assert_not_called()
 
-    
+
+class TestDeleteUserIntegration:
+    """Tests de integración para delete_user que utiliza get_user_by_id."""
+
+    @pytest.mark.asyncio
+    async def test_verifies_user_exists_before_delete(
+        self, user_service, repository_mock, existing_user
+    ):
+        """Verifica existencia del usuario antes de eliminar."""
+        user_id = str(existing_user.id)
+        repository_mock.get_by_id = AsyncMock(return_value=existing_user)
+        repository_mock.delete = AsyncMock()
+
+        await user_service.delete_user(user_id)
+
+        repository_mock.get_by_id.assert_called_once_with(user_id)
