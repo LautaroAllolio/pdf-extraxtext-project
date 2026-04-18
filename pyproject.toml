@@ -31,14 +31,17 @@ dependencies = [
     "motor>=3.3.0",
     "beanie>=1.23.0",
     "pymongo>=4.6.0",
-    # Seguridad
-    "passlib[bcrypt]>=1.7.4",
-    "python-jose[cryptography]>=3.3.0",
     # Configuración y validación
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "python-dotenv>=1.0.0",
-    "email-validator>=2.1.0",
+    # Procesamiento de PDFs y OCR
+    "pymupdf>=1.23.0",
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0.0",
+    # Upload de archivos
+    "multipart>=0.2.4",
+    # Testing
     "pytest>=9.0.3",
     "pytest-asyncio>=1.3.0",
     "httpx>=0.28.1",
@@ -108,15 +111,15 @@ warn_unreachable = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = "passlib.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "jose.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
 module = "motor.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pymupdf.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytesseract.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
