@@ -3,14 +3,17 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "fastapi-clean-architecture"
+name = "PaperSoul"
 version = "1.0.0"
 description = "API con arquitectura de tres capas y Clean Code usando MongoDB"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "Lautaro Allolio", email = "46546353@alumnos.frsr.utn.edu.ar"}
+    {name = "Lautaro Allolio", email = "46546353@alumnos.frsr.utn.edu.ar"},
+    {name = "Pablo Condori", email = "46061183@alumnos.frsr.utn.edu.ar"},
+    {name = "Lucas Gimenez", email = "46397633@alumnos.frsr.utn.edu.ar"},
+    {name = "Valentino Pasetti", email = "45875426@alumnos.frsr.utn.edu.ar"}
 ]
 keywords = ["fastapi", "clean-architecture", "api", "async", "mongodb"]
 classifiers = [
@@ -25,20 +28,20 @@ classifiers = [
 
 dependencies = [
     # FastAPI y servidor
-    "fastapi>=0.104.0",
-    "uvicorn[standard]>=0.24.0",
+    "fastapi>=0.136.0",
+    "uvicorn[standard]>=0.44.0",
     # Base de datos MongoDB
-    "motor>=3.3.0",
-    "beanie>=1.23.0",
-    "pymongo>=4.6.0",
+    "motor>=3.7.1",
+    "beanie>=2.1.0",
+    "pymongo>=4.16.0",
     # Configuración y validación
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "python-dotenv>=1.0.0",
+    "pydantic>=2.13.2",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.2",
     # Procesamiento de PDFs y OCR
-    "pymupdf>=1.23.0",
-    "pytesseract>=0.3.10",
-    "Pillow>=10.0.0",
+    "pymupdf>=1.27.2.2",
+    "pytesseract>=0.3.13",
+    "Pillow>=12.2.0",
     # Upload de archivos
     "multipart>=0.2.4",
     # Testing
