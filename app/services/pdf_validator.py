@@ -9,51 +9,71 @@ Este módulo implementa las 7 validaciones requeridas:
 6. Tiene páginas
 7. Tiene texto extraíble
 """
-
+import os
+import pymupdf
 from typing import Any
+from fastapi import UploadFile, HTTPException
 
-
-def validate_file_exists(file: Any) -> bool:
+def validate_file_exists(file: UploadFile) -> bool:
     """Valida que el archivo exista y tenga nombre."""
-    raise NotImplementedError("FASE ROJA: Implementar validación de existencia")
-
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="Archivo no proporcionado o sin nombre")
+    return True
 
 def validate_file_size(content: bytes) -> bool:
     """Valida que el archivo tenga contenido (> 0 bytes)."""
-    raise NotImplementedError("FASE ROJA: Implementar validación de tamaño")
-
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Archivo vacío")
+    """TODO:Agregar validación de tamaño máximo"""
+    return True
 
 def validate_file_extension(filename: str) -> bool:
     """Valida que la extensión sea .pdf (case-insensitive)."""
-    raise NotImplementedError("FASE ROJA: Implementar validación de extensión")
-
+    ext = os.path.splitext(filename)[1].lower()
+    if ext != ".pdf":
+        raise HTTPException(status_code=400, detail="Archivo no es un .pdf")
+    return True
 
 def validate_pdf_header(content: bytes) -> bool:
     """Valida que el header binario sea %PDF-."""
-    raise NotImplementedError("FASE ROJA: Implementar validación de header")
+    if not content.startswith(b"%PDF-"):
+        raise HTTPException(status_code=400, detail="Archivo no tiene header PDF válido")
+    return True
 
-
-def validate_not_encrypted(content: bytes) -> Any:
+def validate_not_encrypted(content: bytes) -> pymupdf.Document:
     """Valida que el PDF no esté cifrado con contraseña.
 
     Retorna el documento fitz abierto si es válido.
     """
-    raise NotImplementedError("FASE ROJA: Implementar validación de cifrado")
-
+    doc = pymupdf.open(stream=content, filetype="pdf")
+    if doc.needs_pass:
+        doc.close()
+        raise HTTPException(status_code=400, detail="Archivo PDF está cifrado con contraseña")
+    return doc
 
 def validate_has_pages(doc: Any) -> bool:
     """Valida que el PDF tenga al menos 1 página."""
-    raise NotImplementedError("FASE ROJA: Implementar validación de páginas")
-
+    if doc.page_count < 1:
+        raise HTTPException(status_code=400, detail="Archivo PDF no tiene páginas")
+    return True
 
 def validate_has_text(doc: Any) -> bool:
     """Valida que el PDF tenga texto extraíble.
 
     Umbral: más de 10 caracteres en total.
     """
-    raise NotImplementedError("FASE ROJA: Implementar validación de texto")
+    has_text = False
+    for page in doc:
+        text = page.get_text().strip()
+        if len(text) > 10:
+            has_text = True
+            break
+    if not has_text:
+        doc.close()
+        raise HTTPException(status_code=400, detail="Archivo PDF no tiene texto extraíble")
+    return True
 
-
+    
 def validate_pdf_complete(file: Any, content: bytes) -> bool:
     """Validación completa: ejecuta todas las validaciones en orden.
 
@@ -62,8 +82,20 @@ def validate_pdf_complete(file: Any, content: bytes) -> bool:
     2. Tamaño
     3. Extensión
     4. Header
-    5. Cifrado (retorna doc fitz)
+    5. Cifrado (retorna doc )
     6. Páginas
     7. Texto
     """
-    raise NotImplementedError("FASE ROJA: Implementar validación completa")
+    validate_file_exists(file)
+    validate_file_size(content)
+    validate_file_extension(file.filename)
+    validate_pdf_header(content)
+    
+    doc = validate_not_encrypted(content)
+    try:
+        validate_has_pages(doc)
+        validate_has_text(doc)
+    finally:
+        doc.close()
+    
+    return True
