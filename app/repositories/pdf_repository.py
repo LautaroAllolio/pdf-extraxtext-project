@@ -4,6 +4,8 @@ Implementa el patrón Repository para la entidad PdfDocument,
 utilizando BaseRepository para operaciones genéricas.
 """
 
+from datetime import datetime
+
 from app.models.pdf_document import PdfDocument
 from app.repositories.base import BaseRepository
 
@@ -12,13 +14,79 @@ class PdfRepository(BaseRepository[PdfDocument]):
     """Repositorio para gestionar documentos PDF en MongoDB.
 
     Hereda de BaseRepository todas las operaciones CRUD genéricas.
+    Agrega métodos específicos para consultas por PDF.
 
     Ejemplo de uso:
-        >>> from app.repositories.pdf_repository import PdfRepository
-        >>> repo = PdfRepository()
-        >>> doc = await repo.create({"filename": "test.pdf", ...})
+    >>> from app.repositories.pdf_repository import PdfRepository
+    >>> repo = PdfRepository()
+    >>> doc = await repo.create({"filename": "test.pdf", ...})
+    >>> docs = await repo.get_by_filename("test.pdf")
     """
 
     def __init__(self) -> None:
         """Inicializa el repositorio con el modelo PdfDocument."""
         super().__init__(PdfDocument)
+
+    async def get_by_filename(self, filename: str) -> list[PdfDocument]:
+        """Busca documentos por nombre de archivo exacto.
+
+        Args:
+            filename: Nombre del archivo a buscar.
+
+        Returns:
+            Lista de documentos con ese nombre.
+        """
+        return await self._document_model.find(
+            self._document_model.filename == filename
+        ).to_list()
+
+    async def get_by_extraction_method(
+        self, method: str, skip: int = 0, limit: int = 100
+    ) -> list[PdfDocument]:
+        """Busca documentos por método de extracción.
+
+        Args:
+            method: Método de extracción ('pymupdf' o 'ocr').
+            skip: Número de documentos a omitir.
+            limit: Número máximo de documentos a retornar.
+
+        Returns:
+            Lista de documentos con ese método.
+        """
+        return await self._document_model.find(
+            self._document_model.extraction_method == method
+        ).skip(skip).limit(limit).to_list()
+
+    async def get_by_date_range(
+        self, start: datetime, end: datetime, skip: int = 0, limit: int = 100
+    ) -> list[PdfDocument]:
+        """Busca documentos por rango de fechas de creación.
+
+        Args:
+            start: Fecha inicial (inclusive).
+            end: Fecha final (inclusive).
+            skip: Número de documentos a omitir.
+            limit: Número máximo de documentos a retornar.
+
+        Returns:
+            Lista de documentos creados en ese rango.
+        """
+        return await self._document_model.find(
+            self._document_model.created_at >= start,
+            self._document_model.created_at <= end
+        ).skip(skip).limit(limit).to_list()
+
+    async def get_latest(self, limit: int = 10) -> list[PdfDocument]:
+        """Obtiene los documentos más recientemente creados.
+
+        Args:
+            limit: Número máximo de documentos a retornar.
+
+        Returns:
+            Lista de documentos ordenados por fecha descendente.
+        """
+        return await self._document_model.find().sort(
+            -self._document_model.created_at
+        ).limit(limit).to_list()
+
+    
