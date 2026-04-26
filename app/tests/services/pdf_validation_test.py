@@ -53,6 +53,7 @@ class TestPDFExistsValidation:
         """ROJO: Debe lanzar error cuando el filename está vacío."""
         # Arrange
         from app.services.pdf_validator import validate_file_exists
+
         empty_file = Mock()
         empty_file.filename = ""
 
@@ -75,12 +76,13 @@ class TestPDFExistsValidation:
 
 
 class TestPDFSizeValidation:
-    """Tests para validación: ¿Pesa más de 0 KB?"""
+    """Tests para validación: ¿Pesa más de 0 KB y menos de 50 MB?"""
 
     def test_should_raise_error_when_file_is_empty(self):
         """ROJO: Debe lanzar error cuando el archivo tiene 0 bytes."""
         # Arrange
         from app.services.pdf_validator import validate_file_size
+
         empty_content = b""
 
         # Act & Assert
@@ -95,6 +97,45 @@ class TestPDFSizeValidation:
         from app.services.pdf_validator import validate_file_size
 
         # Act & Assert - No debe lanzar excepción
+        result = validate_file_size(valid_pdf_content)
+
+        # Assert
+        assert result is True
+
+    def test_should_raise_error_when_file_exceeds_50mb(self):
+        """ROJO: Debe lanzar error cuando el archivo excede 50 MB."""
+        # Arrange
+        from app.services.pdf_validator import validate_file_size
+
+        MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB en bytes
+        oversized_content = b"x" * (MAX_FILE_SIZE + 1)  # 50 MB + 1 byte
+
+        # Act & Assert
+        with pytest.raises(Exception) as exc_info:
+            validate_file_size(oversized_content)
+
+        assert "50 mb" in str(exc_info.value).lower() or "excede" in str(exc_info.value).lower()
+
+    def test_should_pass_when_file_is_at_50mb(self):
+        """ROJO: Debe pasar cuando el archivo tiene exactamente 50 MB."""
+        # Arrange
+        from app.services.pdf_validator import validate_file_size
+
+        MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB en bytes
+        content_at_limit = b"x" * MAX_FILE_SIZE
+
+        # Act
+        result = validate_file_size(content_at_limit)
+
+        # Assert
+        assert result is True
+
+    def test_should_pass_when_file_is_under_50mb(self, valid_pdf_content):
+        """ROJO: Debe pasar cuando el archivo es menor a 50 MB."""
+        # Arrange
+        from app.services.pdf_validator import validate_file_size
+
+        # Act
         result = validate_file_size(valid_pdf_content)
 
         # Assert
@@ -145,6 +186,7 @@ class TestPDFHeaderValidation:
         """ROJO: Debe lanzar error cuando el header no es %PDF-."""
         # Arrange
         from app.services.pdf_validator import validate_pdf_header
+
         fake_pdf = b"This is not a PDF file"
 
         # Act & Assert
@@ -289,7 +331,9 @@ class TestPDFTextValidation:
 class TestPDFCompleteValidation:
     """Tests de integración: Validación completa del flujo."""
 
-    def test_should_validate_complete_pdf_successfully(self, valid_upload_file, valid_pdf_content, monkeypatch):
+    def test_should_validate_complete_pdf_successfully(
+        self, valid_upload_file, valid_pdf_content, monkeypatch
+    ):
         """ROJO: Debe validar un PDF completo correctamente paso a paso."""
         # Arrange
         from app.services.pdf_validator import validate_pdf_complete

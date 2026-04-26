@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     # Configuración de logging
     LOG_LEVEL: str = "INFO"
 
+    # Configuración de root user (opcional)
+    ROOT_USERNAME: Optional[str] = None
+    ROOT_PASSWORD: Optional[str] = None
+
     class Config:
         env_file = ".env"
         case_sensitive = True
