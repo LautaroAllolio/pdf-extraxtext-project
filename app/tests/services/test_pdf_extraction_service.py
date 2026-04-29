@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import MagicMock
 from app.services.pdf_extraction_service import PdfExtractionService
-from app.core.exceptions import ValidationException, ApplicationException
+from app.core.exceptions import ApplicationException
 
-VALID_PDF_BYTES = b"%PDF fake content"
+VALID_PDF_BYTES = b"%PDF- fake content"
 INVALID_PDF_BYTES = b"not a pdf"
-EMPTY_PDF_BYTES = b"%PDF empty"
+EMPTY_PDF_BYTES = b"%PDF- empty"
 
 def make_service(primary_result = None, fallback_result=None, primary_raises = False, fallback_raises = False):
     """
@@ -28,10 +28,14 @@ def make_service(primary_result = None, fallback_result=None, primary_raises = F
 
 #Validation ------------------------------------------------------------------------------------------------
 def test_archivo_invalido():
-    """lanza ValidationException"""
+    """Lanza HTTPException cuando el archivo no es un PDF válido."""
+    from fastapi import HTTPException
+
     service, _, _ = make_service()
-    with pytest.raises(ValidationException):
-        service.extract_text (INVALID_PDF_BYTES, "test.pdf")
+    with pytest.raises(HTTPException) as exc_info:
+        service.extract_text(INVALID_PDF_BYTES, "test.pdf")
+
+    assert exc_info.value.status_code == 400
 
 #Extractor primario(PyMuPDF)--------------------------------------------------------------------------------
 def test_extract_text_pymupdf():
@@ -93,11 +97,12 @@ def test_extraction_failed():
 
 def test_text_shorter():
     """
-    Si PyMuPDF extrae menos de MIN_TEXT_LENGTH chars,
+    Si PyMuPDF extrae menos de MIN_TEXT_LENGTH chars,(menos de 10 caracteres)
     se considera vacío y activa el OCR
+    
     """
     service, _, fallback = make_service(
-        primary_result=("abc", 1),              #menos de 10 chars
+        primary_result=("abc", 1),             
         fallback_result=("Texto completo del OCR",1)
     )
     result = service.extract_text(VALID_PDF_BYTES, "corto.pdf")
