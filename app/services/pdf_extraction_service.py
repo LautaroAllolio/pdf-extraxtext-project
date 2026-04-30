@@ -1,8 +1,10 @@
-from typing import Protocol, runtime_checkable
 import pymupdf
+from typing import Protocol, runtime_checkable
 from app.core.exceptions import ApplicationException
 from app.services.pdf_validator import validate_pdf_header
+from app.core.config import get_settings
 
+settings = get_settings()
 
 @runtime_checkable
 class TextExtractor(Protocol):
@@ -20,13 +22,13 @@ class PyMuPdfExtractor:
 
 
 class TesseractOcrExtractor:
-    MIN_DPI = 300
+    mini_dpi = settings.MIN_DPI
 
     def extract(self, pdf_bytes: bytes) -> tuple[str, int]:
         import pytesseract
         from pdf2image import convert_from_bytes
 
-        images = convert_from_bytes(pdf_bytes, dpi=self.MIN_DPI)
+        images = convert_from_bytes(pdf_bytes, dpi=self.mini_dpi)
         text = "\n".join(
             pytesseract.image_to_string(img, lang="spa+eng")
             for img in images
@@ -34,7 +36,7 @@ class TesseractOcrExtractor:
         return text.strip(), len(images)
 
 
-MIN_TEXT_LENGTH = 10
+
 
 
 class PdfExtractionService:
@@ -57,9 +59,10 @@ class PdfExtractionService:
         }
 
     def _try_primary(self, pdf_bytes: bytes) -> tuple[str, int, str]:
+        
         try:
             text, pages = self._primary.extract(pdf_bytes)
-            if len(text) >= MIN_TEXT_LENGTH:
+            if len(text) >= settings.MIN_TEXT_LENGTH:
                 return text, pages, "pymupdf"
             return "", pages, "pymupdf"
         except Exception:

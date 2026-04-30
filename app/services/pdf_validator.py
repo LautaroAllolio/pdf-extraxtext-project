@@ -2,9 +2,9 @@ import os
 import pymupdf
 from typing import Any
 from fastapi import UploadFile, HTTPException
+from app.core.config import get_settings
 
-MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
-
+settings = get_settings()
 
 def validate_file_exists(file: UploadFile) -> bool:
     if not file or not file.filename:
@@ -13,11 +13,13 @@ def validate_file_exists(file: UploadFile) -> bool:
 
 
 def validate_file_size(content: bytes) -> bool:
+    max_bytes = settings.MAX_FILE_SIZE_BYTES * 1024 * 1024
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="Archivo vacío")
-    if len(content) > MAX_FILE_SIZE_BYTES:
+    if len(content) > max_bytes:
         raise HTTPException(
-            status_code=400, detail="Archivo excede el tamaño máximo permitido de 50 MB"
+            status_code=400, 
+            detail=f"Archivo excede el tamaño máximo permitido de {settings.MAX_FILE_SIZE_BYTES}MB"
         )
     return True
 

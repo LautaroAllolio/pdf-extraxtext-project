@@ -11,7 +11,6 @@ requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Lautaro Allolio", email = "46546353@alumnos.frsr.utn.edu.ar"},
-    {name = "Pablo Condori", email = "46061183@alumnos.frsr.utn.edu.ar"},
     {name = "Lucas Gimenez", email = "46397633@alumnos.frsr.utn.edu.ar"},
     {name = "Valentino Pasetti", email = "45875426@alumnos.frsr.utn.edu.ar"}
 ]
@@ -28,22 +27,22 @@ classifiers = [
 
 dependencies = [
     # FastAPI y servidor
-    "fastapi>=0.136.0",
-    "uvicorn[standard]>=0.44.0",
+    "fastapi>=0.136.1",
+    "uvicorn[standard]>=0.46.0",
     # Base de datos MongoDB
     "motor>=3.7.1",
     "beanie>=2.1.0",
-    "pymongo>=4.16.0",
+    "pymongo>=4.17.0",
     # Configuración y validación
-    "pydantic>=2.13.2",
-    "pydantic-settings>=2.13.1",
+    "pydantic>=2.13.3",
+    "pydantic-settings>=2.14.0",
     "python-dotenv>=1.2.2",
     # Procesamiento de PDFs y OCR
-    "pymupdf>=1.27.2.2",
+    "pymupdf>=1.27.2.3",
     "pytesseract>=0.3.13",
     "Pillow>=12.2.0",
     # Upload de archivos
-    "multipart>=0.2.4",
+    "python-multipart>=0.0.27",
     # Testing
     "pytest>=9.0.3",
     "pytest-asyncio>=1.3.0",
@@ -53,16 +52,16 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Testing
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
-    "mongomock-motor>=0.0.20",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "httpx>=0.28.1",
+    "mongomock-motor>=0.0.36",
 
     # Type checking
-    "mypy>=1.7.0",
+    "mypy>=1.20.2",
 
     # Linting
-    "ruff>=0.1.6",
+    "ruff>=0.15.12",
 ]
 
 [project.scripts]
@@ -70,12 +69,12 @@ start = "app.main:start"
 
 [tool.uv]
 dev-dependencies = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
-    "mongomock-motor>=0.0.20",
-    "mypy>=1.7.0",
-    "ruff>=0.1.6",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "httpx>=0.28.1",
+    "mongomock-motor>=0.0.36",
+    "mypy>=1.20.2",
+    "ruff>=0.15.12",
 ]
 
 [tool.ruff]

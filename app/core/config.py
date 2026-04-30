@@ -7,8 +7,7 @@ con validación de tipos y valores por defecto.
 
 from functools import lru_cache
 from typing import Optional
-
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -28,6 +27,12 @@ class Settings(BaseSettings):
     MONGODB_URL: str = "mongodb://localhost:27017/fastapi_db"
     MONGODB_DATABASE: str = "fastapi_db"
 
+    # Configuración de validación de PDFs
+    MAX_FILE_SIZE_BYTES:int = 50
+    #Configuración Servicio de extracción PDFs
+    MIN_TEXT_LENGTH:int = 10
+    MIN_DPI:int = 300
+
     # Configuración de seguridad
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -40,9 +45,10 @@ class Settings(BaseSettings):
     ROOT_USERNAME: Optional[str] = None
     ROOT_PASSWORD: Optional[str] = None
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file = ".env",
         case_sensitive = True
+    )
 
 
 @lru_cache()
