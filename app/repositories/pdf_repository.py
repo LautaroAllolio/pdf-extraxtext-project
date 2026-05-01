@@ -60,7 +60,7 @@ class PdfRepository(BaseRepository[PdfDocument]):
     async def get_by_date_range(
         self, start: datetime, end: datetime, skip: int = 0, limit: int = 100
     ) -> list[PdfDocument]:
-        """Busca documentos por rango de fechas de creación.
+        """Busca documentos por rango de fechas de subida.
 
         Args:
             start: Fecha inicial (inclusive).
@@ -69,15 +69,15 @@ class PdfRepository(BaseRepository[PdfDocument]):
             limit: Número máximo de documentos a retornar.
 
         Returns:
-            Lista de documentos creados en ese rango.
+            Lista de documentos subidos en ese rango.
         """
         return await self._document_model.find(
-            self._document_model.created_at >= start,
-            self._document_model.created_at <= end
+            self._document_model.uploaded_at >= start,
+            self._document_model.uploaded_at <= end
         ).skip(skip).limit(limit).to_list()
 
     async def get_latest(self, limit: int = 10) -> list[PdfDocument]:
-        """Obtiene los documentos más recientemente creados.
+        """Obtiene los documentos más recientemente subidos.
 
         Args:
             limit: Número máximo de documentos a retornar.
@@ -86,7 +86,7 @@ class PdfRepository(BaseRepository[PdfDocument]):
             Lista de documentos ordenados por fecha descendente.
         """
         return await self._document_model.find().sort(
-            -self._document_model.created_at
+            -self._document_model.uploaded_at
         ).limit(limit).to_list()
 
     

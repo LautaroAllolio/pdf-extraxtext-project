@@ -36,7 +36,9 @@ class PdfUploadResponse(BaseModel):
         description="Método de extracción: 'pymupdf' o 'ocr'"
     )
     page_count: int = Field(description="Cantidad de páginas del documento")
-    created_at: datetime = Field(description="Timestamp de creación en UTC")
+    pdf_hash: str = Field(description="Hash SHA-256 del contenido binario del PDF")
+    text_hash: str = Field(description="Hash SHA-256 del texto normalizado")
+    uploaded_at: datetime = Field(description="Timestamp de subida en UTC")
 
 
 class PdfExtractorError(BaseModel):

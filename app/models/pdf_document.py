@@ -9,7 +9,9 @@ class PdfDocument(Document):
     extracted_text: str
     extraction_method: str  # "pymupdf" | "ocr"
     page_count: int
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    pdf_hash: str = ""
+    text_hash: str = ""
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
         name = "pdf_documents"
