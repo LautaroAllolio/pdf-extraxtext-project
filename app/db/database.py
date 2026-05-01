@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from beanie import init_beanie
 
 from app.core.config import get_settings
+from app.models.pdf_document import PdfDocument
 
 settings = get_settings()
 
@@ -28,8 +29,7 @@ async def init_database():
     database = client[settings.MONGODB_DATABASE]
 
     # Inicializar Beanie con los modelos/documentos
-    # TODO: Agregar modelos de documentos cuando se creen (ej: PDFDocument)
-    await init_beanie(database=database, document_models=[])
+    await init_beanie(database=database, document_models=[PdfDocument])
 
 
 async def close_database():
