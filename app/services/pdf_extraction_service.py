@@ -1,7 +1,6 @@
 import pymupdf
 from typing import Protocol, runtime_checkable
 from app.core.exceptions import ApplicationException
-from app.services.pdf_validator import validate_pdf_header
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -45,7 +44,6 @@ class PdfExtractionService:
         self._fallback = fallback_extractor
 
     def extract_text(self, pdf_bytes: bytes, filename: str) -> dict:
-        validate_pdf_header(pdf_bytes)
 
         text, page_count, method = self._try_primary(pdf_bytes)
         if not text:
