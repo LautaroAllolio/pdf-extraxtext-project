@@ -67,11 +67,9 @@ def validate_pdf_complete(file: Any, content: bytes) -> bool:
     validate_file_size(content)
     validate_file_extension(file.filename)
     validate_pdf_header(content)
-
     doc = validate_not_encrypted(content)
     try:
         validate_has_pages(doc)
-        validate_has_text(doc)
     finally:
         doc.close()
 

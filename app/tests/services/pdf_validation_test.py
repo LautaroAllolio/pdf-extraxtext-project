@@ -334,17 +334,12 @@ class TestPDFCompleteValidation:
     def test_should_validate_complete_pdf_successfully(
         self, valid_upload_file, valid_pdf_content, monkeypatch
     ):
-        """ROJO: Debe validar un PDF completo correctamente paso a paso."""
-        # Arrange
+        """PDF válido debe pasar todas las validaciones correctamente."""
         from app.services.pdf_validator import validate_pdf_complete
 
-        # Mock del documento para las validaciones que usan fitz
         mock_doc = MagicMock()
         mock_doc.needs_pass = False
         mock_doc.page_count = 1
-        mock_page = MagicMock()
-        mock_page.get_text.return_value = "Texto de prueba con suficientes caracteres"
-        mock_doc.__iter__ = MagicMock(return_value=iter([mock_page]))
         mock_doc.close = MagicMock()
 
         def mock_open(*args, **kwargs):
@@ -352,10 +347,7 @@ class TestPDFCompleteValidation:
 
         monkeypatch.setattr(pymupdf, "open", mock_open)
 
-        # Act - Este es el flujo completo
         result = validate_pdf_complete(valid_upload_file, valid_pdf_content)
-
-        # Assert
         assert result is True
 
     def test_should_stop_at_first_validation_failure(self):
