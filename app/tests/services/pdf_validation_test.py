@@ -369,3 +369,25 @@ class TestPDFCompleteValidation:
         # Act & Assert
         with pytest.raises(Exception):
             validate_pdf_complete(invalid_file, b"")
+
+    def test_should_pass_for_scanned_pdf_without_text(self, monkeypatch):
+        """PDF escaneado sin texto debe pasar validación completa para ir a OCR."""
+        from app.services.pdf_validator import validate_pdf_complete
+
+        mock_file = Mock()
+        mock_file.filename = "escaneado.pdf"
+
+        mock_doc = MagicMock()
+        mock_doc.needs_pass = False
+        mock_doc.page_count = 1
+        mock_doc.close = MagicMock()
+
+        def mock_open(*args, **kwargs):
+            return mock_doc
+
+        monkeypatch.setattr(pymupdf, "open", mock_open)
+
+        content = b"%PDF- escaneado sin texto"
+
+        result = validate_pdf_complete(mock_file, content)
+        assert result is True
