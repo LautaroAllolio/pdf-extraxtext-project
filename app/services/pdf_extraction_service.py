@@ -4,6 +4,7 @@ import unicodedata
 from typing import Protocol, runtime_checkable
 from app.core.exceptions import ApplicationException
 from app.core.config import get_settings
+from app.services.hashing_service import HashingService
 
 settings = get_settings()
 
@@ -38,20 +39,32 @@ class TesseractOcrExtractor:
 
 
 class PdfExtractionService:
-    def __init__(self, primary_extractor: TextExtractor, fallback_extractor: TextExtractor):
-        self._primary = primary_extractor
+    def __init__(
+        self,
+        primary_extractor: TextExtractor,
+        fallback_extractor: TextExtractor,
+        hashing_service: HashingService | None = None,
+    ):
+        self._primary  = primary_extractor
         self._fallback = fallback_extractor
+        self._hashing  = hashing_service or HashingService()
 
     def extract_text(self, pdf_bytes: bytes, filename: str) -> dict:
+        pdf_hash = self._hashing.calculate_pdf_hash(pdf_bytes)
+
         text, page_count, method = self._try_primary(pdf_bytes)
         if not text:
             text, page_count, method = self._try_fallback(pdf_bytes)
+
+        text_hash = self._hashing.calculate_text_hash(text) if text else ""
 
         return {
             "filename": filename,
             "extracted_text": self._normalize_text(text),
             "extraction_method": method,
             "page_count": page_count,
+            "pdf_hash": pdf_hash,
+            "text_hash": text_hash,
         }
 
     def _normalize_text(self, text: str) -> str:
@@ -73,4 +86,3 @@ class PdfExtractionService:
             return text, pages, "ocr"
         except Exception as e:
             raise ApplicationException(f"No se pudo extraer texto del PDF: {str(e)}")
-            

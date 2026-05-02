@@ -18,8 +18,9 @@ VALID_PDF = (
 
 def _mock_repo():
     mock = AsyncMock()
-    mock.get_by_pdf_hash = AsyncMock(return_value=None)
-    mock.create = AsyncMock(return_value=None)
+    mock.get_by_pdf_hash  = AsyncMock(return_value=None)
+    mock.get_by_text_hash = AsyncMock(return_value=None)
+    mock.create           = AsyncMock(return_value=None)
     return mock
 
 
@@ -98,4 +99,8 @@ async def test_extract_pdf_response_model(async_client):
     assert isinstance(data["extracted_text"], str)
     assert isinstance(data["extraction_method"], str)
     assert isinstance(data["page_count"], int)
+    assert isinstance(data["pdf_hash"], str)
+    assert isinstance(data["text_hash"], str)
     assert data["extraction_method"] in ("pymupdf", "ocr")
+    assert len(data["pdf_hash"]) == 64
+    assert len(data["text_hash"]) == 64

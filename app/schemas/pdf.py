@@ -8,18 +8,14 @@ from pydantic import BaseModel, Field
 
 
 class PdfExtractResponse(BaseModel):
-    """DTO de salida del servicio de extracción de texto.
-
-    Contiene el resultado de extraer texto de un PDF, sin persistir
-    en base de datos. Usado internamente entre servicios.
-    """
+    """DTO de salida del servicio de extracción de texto."""
 
     filename: str = Field(description="Nombre del archivo original")
     extracted_text: str = Field(description="Texto extraído del PDF")
-    extraction_method: str = Field(
-        description="Método usado: 'pymupdf' o 'ocr'"
-    )
+    extraction_method: str = Field(description="Método usado: 'pymupdf' o 'ocr'")
     page_count: int = Field(description="Cantidad de páginas procesadas")
+    pdf_hash: str = Field(default="", description="Hash SHA-256 del contenido binario del PDF")
+    text_hash: str = Field(default="", description="Hash SHA-256 del texto normalizado")
 
 
 class PdfUploadResponse(BaseModel):

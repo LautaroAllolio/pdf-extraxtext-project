@@ -89,4 +89,13 @@ class PdfRepository(BaseRepository[PdfDocument]):
             -self._document_model.uploaded_at
         ).limit(limit).to_list()
 
-    
+    async def get_by_pdf_hash(self, pdf_hash: str) -> PdfDocument | None:
+        if not pdf_hash:
+            return None
+        return await self._document_model.find_one({"pdf_hash": pdf_hash})
+
+    async def get_by_text_hash(self, text_hash: str) -> PdfDocument | None:
+        if not text_hash:
+            return None
+        return await self._document_model.find_one({"text_hash": text_hash})
+        
