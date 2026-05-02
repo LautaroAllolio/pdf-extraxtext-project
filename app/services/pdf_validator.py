@@ -51,16 +51,6 @@ def validate_has_pages(doc: Any) -> bool:
     return True
 
 
-def validate_has_text(doc: Any) -> bool:
-    TEXT_EXTRACTION_THRESHOLD = 10
-
-    for page in doc:
-        if len(page.get_text().strip()) > TEXT_EXTRACTION_THRESHOLD:
-            return True
-
-    doc.close()
-    raise HTTPException(status_code=400, detail="Archivo PDF no tiene texto extraíble")
-
 
 def validate_pdf_complete(file: Any, content: bytes) -> bool:
     validate_file_exists(file)
