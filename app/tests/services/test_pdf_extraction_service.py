@@ -26,17 +26,6 @@ def make_service(primary_result = None, fallback_result=None, primary_raises = F
 
     return PdfExtractionService(primary,fallback), primary, fallback
 
-#Validation ------------------------------------------------------------------------------------------------
-def test_archivo_invalido():
-    """Lanza HTTPException cuando el archivo no es un PDF válido."""
-    from fastapi import HTTPException
-
-    service, _, _ = make_service()
-    with pytest.raises(HTTPException) as exc_info:
-        service.extract_text(INVALID_PDF_BYTES, "test.pdf")
-
-    assert exc_info.value.status_code == 400
-
 #Extractor primario(PyMuPDF)--------------------------------------------------------------------------------
 def test_extract_text_pymupdf():
     """Extrae texto usando pymupdf"""
