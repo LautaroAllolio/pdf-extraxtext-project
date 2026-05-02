@@ -1,5 +1,6 @@
 import pytest
 from fastapi import status
+from unittest.mock import AsyncMock, patch
 
 PDF_EXTRACT_URL = "/api/v1/pdfs/extract"
 
@@ -15,13 +16,21 @@ VALID_PDF = (
 )
 
 
+def _mock_repo():
+    mock = AsyncMock()
+    mock.get_by_pdf_hash = AsyncMock(return_value=None)
+    mock.create = AsyncMock(return_value=None)
+    return mock
+
+
 @pytest.mark.asyncio
 async def test_extract_pdf_exitoso(async_client):
     """PDF válido con texto retorna 200 con los campos correctos."""
-    response = await async_client.post(
-        PDF_EXTRACT_URL,
-        files={"file": ("documento.pdf", VALID_PDF, "application/pdf")},
-    )
+    with patch("app.api.v1.endpoints.pdf.PdfRepository", return_value=_mock_repo()):
+        response = await async_client.post(
+            PDF_EXTRACT_URL,
+            files={"file": ("documento.pdf", VALID_PDF, "application/pdf")},
+        )
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -40,7 +49,6 @@ async def test_extract_pdf_archivo_vacio(async_client):
         PDF_EXTRACT_URL,
         files={"file": ("vacio.pdf", b"", "application/pdf")},
     )
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -51,7 +59,6 @@ async def test_extract_pdf_extension_invalida(async_client):
         PDF_EXTRACT_URL,
         files={"file": ("documento.txt", VALID_PDF, "text/plain")},
     )
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -62,7 +69,6 @@ async def test_extract_pdf_header_invalido(async_client):
         PDF_EXTRACT_URL,
         files={"file": ("falso.pdf", b"esto no es un pdf", "application/pdf")},
     )
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -70,26 +76,24 @@ async def test_extract_pdf_header_invalido(async_client):
 async def test_extract_pdf_supera_50mb(async_client):
     """Archivo mayor a 50 MB retorna 400."""
     contenido_grande = b"%PDF-" + b"x" * (50 * 1024 * 1024 + 1)
-
     response = await async_client.post(
         PDF_EXTRACT_URL,
         files={"file": ("grande.pdf", contenido_grande, "application/pdf")},
     )
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.asyncio
 async def test_extract_pdf_response_model(async_client):
     """El response cumple exactamente con el modelo PdfExtractResponse."""
-    response = await async_client.post(
-        PDF_EXTRACT_URL,
-        files={"file": ("documento.pdf", VALID_PDF, "application/pdf")},
-    )
+    with patch("app.api.v1.endpoints.pdf.PdfRepository", return_value=_mock_repo()):
+        response = await async_client.post(
+            PDF_EXTRACT_URL,
+            files={"file": ("documento.pdf", VALID_PDF, "application/pdf")},
+        )
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-
     assert isinstance(data["filename"], str)
     assert isinstance(data["extracted_text"], str)
     assert isinstance(data["extraction_method"], str)

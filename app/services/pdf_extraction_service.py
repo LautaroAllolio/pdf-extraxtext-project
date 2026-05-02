@@ -1,13 +1,15 @@
+import re
 import pymupdf
+import unicodedata
 from typing import Protocol, runtime_checkable
 from app.core.exceptions import ApplicationException
 from app.core.config import get_settings
 
 settings = get_settings()
 
+
 @runtime_checkable
 class TextExtractor(Protocol):
-    
     def extract(self, pdf_bytes: bytes) -> tuple[str, int]: ...
 
 
@@ -35,29 +37,28 @@ class TesseractOcrExtractor:
         return text.strip(), len(images)
 
 
-
-
-
 class PdfExtractionService:
     def __init__(self, primary_extractor: TextExtractor, fallback_extractor: TextExtractor):
         self._primary = primary_extractor
         self._fallback = fallback_extractor
 
     def extract_text(self, pdf_bytes: bytes, filename: str) -> dict:
-
         text, page_count, method = self._try_primary(pdf_bytes)
         if not text:
             text, page_count, method = self._try_fallback(pdf_bytes)
 
         return {
             "filename": filename,
-            "extracted_text": text,
+            "extracted_text": self._normalize_text(text),
             "extraction_method": method,
             "page_count": page_count,
         }
 
+    def _normalize_text(self, text: str) -> str:
+        normalized = unicodedata.normalize("NFC", text)
+        return re.sub(r'\n{3,}', '\n\n', normalized)
+
     def _try_primary(self, pdf_bytes: bytes) -> tuple[str, int, str]:
-        
         try:
             text, pages = self._primary.extract(pdf_bytes)
             if len(text) >= settings.MIN_TEXT_LENGTH:
@@ -72,3 +73,4 @@ class PdfExtractionService:
             return text, pages, "ocr"
         except Exception as e:
             raise ApplicationException(f"No se pudo extraer texto del PDF: {str(e)}")
+            
