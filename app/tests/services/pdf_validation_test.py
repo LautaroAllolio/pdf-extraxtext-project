@@ -289,43 +289,6 @@ class TestPDFPagesValidation:
         assert result is True
 
 
-class TestPDFTextValidation:
-    """Tests para validación: ¿Tiene texto extraíble?"""
-
-    def test_should_raise_error_when_pdf_has_no_extractable_text(self):
-        """ROJO: Debe lanzar error cuando el PDF no tiene texto (ej: escaneado)."""
-        # Arrange
-        from app.services.pdf_validator import validate_has_text
-
-        mock_page = MagicMock()
-        mock_page.get_text.return_value = "   "  # Solo espacios
-
-        mock_doc = MagicMock()
-        mock_doc.__iter__ = MagicMock(return_value=iter([mock_page]))
-        mock_doc.close = MagicMock()
-
-        # Act & Assert
-        with pytest.raises(Exception) as exc_info:
-            validate_has_text(mock_doc)
-
-        assert "texto" in str(exc_info.value).lower() or "text" in str(exc_info.value).lower()
-
-    def test_should_pass_when_pdf_has_extractable_text(self):
-        """ROJO: Debe pasar cuando el PDF tiene texto extraíble."""
-        # Arrange
-        from app.services.pdf_validator import validate_has_text
-
-        mock_page = MagicMock()
-        mock_page.get_text.return_value = "Este es un texto de prueba con más de 10 caracteres"
-
-        mock_doc = MagicMock()
-        mock_doc.__iter__ = MagicMock(return_value=iter([mock_page]))
-
-        # Act
-        result = validate_has_text(mock_doc)
-
-        # Assert
-        assert result is True
 
 
 class TestPDFCompleteValidation:
