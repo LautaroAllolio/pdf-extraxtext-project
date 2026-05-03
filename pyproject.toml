@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "PaperSoul"
 version = "1.0.0"
 description = "API con arquitectura de tres capas y Clean Code usando MongoDB"
-
+readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
