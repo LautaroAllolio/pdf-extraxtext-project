@@ -39,7 +39,6 @@ PaperSoul es una API REST construida con FastAPI que permite subir archivos PDF,
 ## Estructura del proyecto
 
 ```
-.
 ├── app/
 │   ├── main.py                          # Punto de entrada FastAPI
 │   ├── core/
@@ -49,17 +48,14 @@ PaperSoul es una API REST construida con FastAPI que permite subir archivos PDF,
 │   ├── db/
 │   │   └── database.py                  # Conexión MongoDB con Motor + Beanie
 │   ├── models/
-│   │   ├── user.py                      # Documento MongoDB para usuarios
 │   │   └── pdf_document.py              # Documento MongoDB para PDFs
 │   ├── schemas/
-│   │   ├── user.py                      # Schemas Pydantic para usuarios
+│   │   ├── health.py                    # Schema del health check
 │   │   └── pdf.py                       # Schemas Pydantic para PDFs
 │   ├── repositories/
 │   │   ├── base.py                      # Repositorio base genérico
-│   │   ├── user_repository.py           # Repositorio de usuarios
 │   │   └── pdf_repository.py            # Repositorio de PDFs (búsqueda por hash)
 │   ├── services/
-│   │   ├── user_service.py              # Lógica de negocio de usuarios
 │   │   ├── pdf_extraction_service.py    # Extracción con PyMuPDF + OCR
 │   │   ├── pdf_validator.py             # Validaciones del archivo PDF
 │   │   └── hashing_service.py           # Hashes SHA-256 para deduplicación
@@ -71,7 +67,7 @@ PaperSoul es una API REST construida con FastAPI que permite subir archivos PDF,
 │   └── tests/
 │       ├── conftest.py                  # Fixtures compartidos
 │       ├── api/
-│       │   ├── test_health.py
+│       │   ├── test_health.py           # Tests del health check
 │       │   └── v1/endpoints/
 │       │       └── test_pdf_endpoints.py
 │       ├── repositories/
@@ -81,9 +77,11 @@ PaperSoul es una API REST construida con FastAPI que permite subir archivos PDF,
 │           ├── test_hashing_service.py
 │           ├── test_hashing_service_integration.py
 │           └── test_pdf_extraction_service.py
+├── Documents/                           # Documentación técnica del equipo
+├── postman/                             # Colecciones de Postman
 ├── Dockerfile                           # Imagen Docker de la API
 ├── docker-compose.yml                   # Entorno completo (api + mongodb + mongo-express)
-├── pyproject.toml                       # Dependencias y configuración del proyecto
+├── pyproject.toml                       # Dependencias y configuración
 ├── .env.example                         # Variables de entorno de referencia
 └── uv.lock                              # Lock de dependencias
 ```
