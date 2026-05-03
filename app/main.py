@@ -61,3 +61,7 @@ app = create_application()
 async def health_check():
     """Retorna el estado operativo de la API y su versión."""
     return HealthResponse(status="healthy", version=settings.VERSION)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
