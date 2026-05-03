@@ -9,7 +9,7 @@ from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.db.database import init_database, close_database
-
+from app.schemas.health import HealthResponse
 
 settings = get_settings()
 
@@ -52,9 +52,12 @@ def create_application() -> FastAPI:
 app = create_application()
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    response_model=HealthResponse,
+    tags=["health"],
+    summary="Verificación de estado del sistema",
+)
 async def health_check():
-    """
-    Endpoint de verificación de salud del sistema.
-    """
-    return {"status": "healthy"}
+    """Retorna el estado operativo de la API y su versión."""
+    return HealthResponse(status="healthy", version=settings.VERSION)
