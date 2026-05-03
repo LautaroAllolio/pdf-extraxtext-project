@@ -132,6 +132,7 @@ ignore_missing_imports = true
 testpaths = ["app/tests"]
 asyncio_mode = "auto"
 pythonpath = ["."]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
