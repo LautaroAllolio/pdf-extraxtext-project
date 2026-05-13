@@ -1,0 +1,124 @@
+@startuml PaperSoul - Diagrama de Secuencia
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 200
+
+actor Cliente
+participant "PdfEndpoint\n(pdf.py)" as EP
+participant "PdfValidator" as VAL
+participant "HashingService" as HS
+participant "PdfRepository" as REPO
+participant "PdfExtractionService" as SVC
+participant "PyMuPdfExtractor" as PYMUPDF
+participant "TesseractOcrExtractor" as OCR
+database "MongoDB" as DB
+
+== Request ==
+Cliente -> EP : POST /api/v1/pdfs/extract\nmultipart/form-data (file)
+activate EP
+
+EP -> EP : content = await file.read()
+
+== Validación del PDF ==
+EP -> VAL : validate_pdf_complete(file, content)
+activate VAL
+
+VAL -> VAL : validate_file_exists(file)
+VAL -> VAL : validate_file_size(content)
+VAL -> VAL : validate_file_extension(filename)
+VAL -> VAL : validate_pdf_header(content)
+VAL -> VAL : validate_not_encrypted(content)
+VAL -> VAL : validate_has_pages(doc)
+
+alt Validación falla
+    VAL --> EP : HTTPException 400
+    EP --> Cliente : 400 Bad Request
+    return
+end
+
+VAL --> EP : True
+deactivate VAL
+
+== Detección de duplicado por PDF hash ==
+EP -> HS : calculate_pdf_hash(content)
+activate HS
+HS --> EP : pdf_hash (SHA-256)
+deactivate HS
+
+EP -> REPO : get_by_pdf_hash(pdf_hash)
+activate REPO
+REPO -> DB : find_one({"pdf_hash": pdf_hash})
+DB --> REPO : documento | None
+REPO --> EP : PdfDocument | None
+deactivate REPO
+
+alt PDF duplicado encontrado
+    EP --> Cliente : 200 OK\n{ filename, extracted_text,\nextraction_method, page_count }
+    return
+end
+
+== Extracción de texto ==
+EP -> SVC : extract_text(content, filename)
+activate SVC
+
+SVC -> HS : calculate_pdf_hash(pdf_bytes)
+activate HS
+HS --> SVC : pdf_hash
+deactivate HS
+
+SVC -> PYMUPDF : extract(pdf_bytes)
+activate PYMUPDF
+PYMUPDF --> SVC : (text, page_count)
+deactivate PYMUPDF
+
+alt texto >= MIN_TEXT_LENGTH (10 chars)
+    SVC -> SVC : method = "pymupdf"
+else texto insuficiente o excepción
+    SVC -> OCR : extract(pdf_bytes)
+    activate OCR
+    OCR --> SVC : (text, page_count)
+    deactivate OCR
+    SVC -> SVC : method = "ocr"
+end
+
+SVC -> SVC : _normalize_text(text)
+
+alt text no vacío
+    SVC -> HS : calculate_text_hash(text)
+    activate HS
+    HS --> SVC : text_hash
+    deactivate HS
+else text vacío
+    SVC -> SVC : text_hash = ""
+end
+
+SVC --> EP : { filename, extracted_text,\nextraction_method, page_count,\npdf_hash, text_hash }
+deactivate SVC
+
+== Detección de duplicado por texto hash ==
+EP -> REPO : get_by_text_hash(text_hash)
+activate REPO
+REPO -> DB : find_one({"text_hash": text_hash})
+DB --> REPO : documento | None
+REPO --> EP : PdfDocument | None
+deactivate REPO
+
+alt Texto duplicado encontrado
+    EP --> Cliente : 200 OK\n{ filename, extracted_text,\nextraction_method, page_count }
+    return
+end
+
+== Persistencia ==
+EP -> REPO : create(result)
+activate REPO
+REPO -> DB : insert_one(document)
+DB --> REPO : PdfDocument
+REPO --> EP : PdfDocument
+deactivate REPO
+
+== Response ==
+EP --> Cliente : 200 OK\n{ filename, extracted_text,\nextraction_method, page_count,\npdf_hash, text_hash }
+deactivate EP
+
+@enduml

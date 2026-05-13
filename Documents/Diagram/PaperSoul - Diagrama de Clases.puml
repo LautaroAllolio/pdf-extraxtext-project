@@ -1,0 +1,210 @@
+@startuml PaperSoul - Diagrama de Clases
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam packageFontSize 14
+skinparam linetype ortho
+
+' ─────────────────────────────────────────
+' CAPA DE DATOS - MODELOS
+' ─────────────────────────────────────────
+package "models" #DDEEFF {
+    class PdfDocument {
+        +filename: str
+        +extracted_text: str
+        +extraction_method: str
+        +page_count: int
+        +pdf_hash: str
+        +text_hash: str
+        +uploaded_at: datetime
+        --
+        +Settings.name: "pdf_documents"
+    }
+}
+
+' ─────────────────────────────────────────
+' CAPA DE DATOS - REPOSITORIOS
+' ─────────────────────────────────────────
+package "repositories" #DDEEFF {
+    class BaseRepository<T> {
+        #_document_model: T
+        --
+        +__init__(document_model: T)
+        +get_by_id(id: str): T
+        +get_all(): list[T]
+        +create(data: dict): T
+        +update(document: T, data: dict): T
+        +delete(document: T): bool
+    }
+
+    class PdfRepository {
+        --
+        +__init__()
+        +get_by_filename(filename: str): list[PdfDocument]
+        +get_by_extraction_method(method: str): list[PdfDocument]
+        +get_by_date_range(start: datetime, end: datetime): list[PdfDocument]
+        +get_latest(limit: int): list[PdfDocument]
+        +get_by_pdf_hash(pdf_hash: str): PdfDocument | None
+        +get_by_text_hash(text_hash: str): PdfDocument | None
+    }
+
+    BaseRepository <|-- PdfRepository
+    PdfRepository ..> PdfDocument
+}
+
+' ─────────────────────────────────────────
+' CAPA DE NEGOCIO - SCHEMAS
+' ─────────────────────────────────────────
+package "schemas" #EEFFDD {
+    class PdfExtractResponse {
+        +filename: str
+        +extracted_text: str
+        +extraction_method: str
+        +page_count: int
+        +pdf_hash: str
+        +text_hash: str
+    }
+
+    class PdfUploadResponse {
+        +id: str
+        +filename: str
+        +extracted_text: str
+        +extraction_method: str
+        +page_count: int
+        +pdf_hash: str
+        +text_hash: str
+        +uploaded_at: datetime
+    }
+
+    class PdfExtractorError {
+        +filename: str
+        +error: str
+    }
+}
+
+' ─────────────────────────────────────────
+' CAPA DE NEGOCIO - SERVICIOS
+' ─────────────────────────────────────────
+package "services" #FFEECC {
+
+    interface TextExtractor <<Protocol>> {
+        +extract(pdf_bytes: bytes): tuple[str, int]
+    }
+
+    class PyMuPdfExtractor {
+        --
+        +extract(pdf_bytes: bytes): tuple[str, int]
+    }
+
+    class TesseractOcrExtractor {
+        +mini_dpi: int
+        --
+        +extract(pdf_bytes: bytes): tuple[str, int]
+    }
+
+    class PdfExtractionService {
+        -_primary: TextExtractor
+        -_fallback: TextExtractor
+        -_hashing: HashingService
+        --
+        +__init__(primary, fallback, hashing_service)
+        +extract_text(pdf_bytes: bytes, filename: str): dict
+        -_normalize_text(text: str): str
+        -_try_primary(pdf_bytes: bytes): tuple[str, int, str]
+        -_try_fallback(pdf_bytes: bytes): tuple[str, int, str]
+    }
+
+    class HashingService {
+        -_whitespace_pattern: Pattern
+        --
+        +__init__()
+        +calculate_pdf_hash(pdf_bytes: bytes): str
+        +calculate_text_hash(text: str): str
+    }
+
+    class PdfValidator <<module>> {
+        +MAX_FILE_SIZE_BYTES: int
+        --
+        +validate_file_exists(file): bool
+        +validate_file_size(content: bytes): bool
+        +validate_file_extension(filename: str): bool
+        +validate_pdf_header(content: bytes): bool
+        +validate_not_encrypted(content: bytes): Document
+        +validate_has_pages(doc): bool
+        +validate_has_text(doc): bool
+        +validate_pdf_complete(file, content: bytes): bool
+    }
+
+    TextExtractor <|.. PyMuPdfExtractor
+    TextExtractor <|.. TesseractOcrExtractor
+    PdfExtractionService o-- TextExtractor
+    PdfExtractionService o-- HashingService
+}
+
+' ─────────────────────────────────────────
+' CAPA DE CORE
+' ─────────────────────────────────────────
+package "core" #FFE0E0 {
+    class Settings {
+        +PROJECT_NAME: str
+        +VERSION: str
+        +API_V1_STR: str
+        +MONGODB_URL: str
+        +MONGODB_DATABASE: str
+        +MAX_FILE_SIZE_BYTES: int
+        +MIN_TEXT_LENGTH: int
+        +MIN_DPI: int
+        +SECRET_KEY: str
+        +LOG_LEVEL: str
+    }
+
+    class ApplicationException {
+        +message: str
+        +status_code: int
+        --
+        +__init__(message, status_code)
+    }
+
+    class ResourceNotFoundException {
+        --
+        +__init__(resource_name, resource_id)
+    }
+
+    class ValidationException {
+        --
+        +__init__(message)
+    }
+
+    class DuplicateResourceException {
+        --
+        +__init__(resource_name, field, value)
+    }
+
+    ApplicationException <|-- ResourceNotFoundException
+    ApplicationException <|-- ValidationException
+    ApplicationException <|-- DuplicateResourceException
+}
+
+' ─────────────────────────────────────────
+' CAPA DE PRESENTACIÓN - API
+' ─────────────────────────────────────────
+package "api.v1.endpoints" #F0E0FF {
+    class PdfEndpoint <<router>> {
+        --
+        +extract_pdf(file: UploadFile): PdfExtractResponse
+    }
+}
+
+' ─────────────────────────────────────────
+' RELACIONES ENTRE CAPAS
+' ─────────────────────────────────────────
+PdfEndpoint ..> PdfExtractionService : uses
+PdfEndpoint ..> PdfRepository : uses
+PdfEndpoint ..> HashingService : uses
+PdfEndpoint ..> PdfValidator : uses
+PdfEndpoint ..> PdfExtractResponse : returns
+
+PdfExtractionService ..> ApplicationException : raises
+PdfValidator ..> ApplicationException : raises
+
+@enduml
