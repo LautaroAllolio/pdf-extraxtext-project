@@ -15,12 +15,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-WORKDIR /app
+RUN useradd --create-home appuser
+
+WORKDIR /home/appuser/app
 
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev
 
 COPY app/ ./app/
+RUN chown -R appuser:appuser /home/appuser/app
+
+USER appuser
 
 EXPOSE 8000
 
