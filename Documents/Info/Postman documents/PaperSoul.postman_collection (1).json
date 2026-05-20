@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "PaperSoul",
+    "description": "Colección de endpoints principales de la API PaperSoul.\n\nAntes de usar: configurá la variable `baseUrl` en el entorno Postman apuntando a tu instancia local o de producción.\n\nEjemplo local: http://127.0.0.1:8000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica que la API esté operativa. Retorna el estado del sistema y la versión actual."
+          },
+          "response": [
+            {
+              "name": "200 OK — Sistema operativo",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"healthy\",\n  \"version\": \"1.0.0\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PDFs",
+      "item": [
+        {
+          "name": "POST /api/v1/pdfs/extract",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "Archivo PDF a procesar. Máximo 50 MB. No debe estar cifrado con contraseña."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdfs/extract",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "pdfs", "extract"]
+            },
+            "description": "Extrae el texto de un archivo PDF. Usa PyMuPDF como extractor primario y Tesseract OCR como fallback para PDFs escaneados. Detecta duplicados por hash del archivo y del texto extraído."
+          },
+          "response": [
+            {
+              "name": "200 OK — Extracción exitosa",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"filename\": \"documento.pdf\",\n  \"extracted_text\": \"Contenido extraído del PDF...\",\n  \"extraction_method\": \"pymupdf\",\n  \"page_count\": 3,\n  \"pdf_hash\": \"a3f5...2c9b\",\n  \"text_hash\": \"d7e1...4f8a\"\n}"
+            },
+            {
+              "name": "400 — Archivo vacío",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Archivo vacío\"\n}"
+            },
+            {
+              "name": "400 — Extensión inválida",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Archivo no es un .pdf\"\n}"
+            },
+            {
+              "name": "400 — PDF cifrado",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Archivo PDF está cifrado con contraseña\"\n}"
+            },
+            {
+              "name": "400 — Excede 50 MB",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Archivo excede el tamaño máximo permitido de 50MB\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
