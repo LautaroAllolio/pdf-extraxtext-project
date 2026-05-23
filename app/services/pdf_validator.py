@@ -1,10 +1,13 @@
-import os
-import pymupdf
+from pathlib import Path
 from typing import Any
-from fastapi import UploadFile, HTTPException
+
+import pymupdf
+from fastapi import HTTPException, UploadFile
+
 from app.core.config import get_settings
 
 settings = get_settings()
+
 
 def validate_file_exists(file: UploadFile) -> bool:
     if not file or not file.filename:
@@ -18,22 +21,21 @@ def validate_file_size(content: bytes) -> bool:
         raise HTTPException(status_code=400, detail="Archivo vacío")
     if len(content) > max_bytes:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Archivo excede el tamaño máximo permitido de {settings.MAX_FILE_SIZE_BYTES}MB"
+            status_code=400,
+            detail=f"Archivo excede el tamaño máximo de {settings.MAX_FILE_SIZE_BYTES} MB",
         )
     return True
 
 
 def validate_file_extension(filename: str) -> bool:
-    ext = os.path.splitext(filename)[1].lower()
-    if ext != ".pdf":
-        raise HTTPException(status_code=400, detail="Archivo no es un .pdf")
+    if Path(filename).suffix.lower() != ".pdf":
+        raise HTTPException(status_code=400, detail="El archivo debe tener extensión .pdf")
     return True
 
 
 def validate_pdf_header(content: bytes) -> bool:
     if not content.startswith(b"%PDF-"):
-        raise HTTPException(status_code=400, detail="Archivo no tiene header PDF válido")
+        raise HTTPException(status_code=400, detail="El archivo no tiene un header PDF válido")
     return True
 
 
@@ -47,9 +49,19 @@ def validate_not_encrypted(content: bytes) -> pymupdf.Document:
 
 def validate_has_pages(doc: Any) -> bool:
     if doc.page_count < 1:
-        raise HTTPException(status_code=400, detail="Archivo PDF no tiene páginas")
+        raise HTTPException(status_code=400, detail="El PDF no tiene páginas")
     return True
 
+
+def validate_has_text(doc: Any) -> bool:
+    has_extractable_text = any(
+        len(page.get_text().strip()) > settings.MIN_TEXT_LENGTH
+        for page in doc
+    )
+    if not has_extractable_text:
+        doc.close()
+        raise HTTPException(status_code=400, detail="El PDF no tiene texto extraíble")
+    return True
 
 
 def validate_pdf_complete(file: Any, content: bytes) -> bool:
@@ -62,5 +74,4 @@ def validate_pdf_complete(file: Any, content: bytes) -> bool:
         validate_has_pages(doc)
     finally:
         doc.close()
-
     return True

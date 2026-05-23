@@ -8,6 +8,9 @@ from app.services.hashing_service import HashingService
 
 settings = get_settings()
 
+EXTRACTION_METHOD_PYMUPDF = "pymupdf"
+EXTRACTION_METHOD_OCR = "ocr"
+
 
 @runtime_checkable
 class TextExtractor(Protocol):
@@ -24,13 +27,13 @@ class PyMuPdfExtractor:
 
 
 class TesseractOcrExtractor:
-    mini_dpi = settings.MIN_DPI
+    _dpi: int = settings.MIN_DPI
 
     def extract(self, pdf_bytes: bytes) -> tuple[str, int]:
         import pytesseract
         from pdf2image import convert_from_bytes
 
-        images = convert_from_bytes(pdf_bytes, dpi=self.mini_dpi)
+        images = convert_from_bytes(pdf_bytes, dpi=self._dpi)
         text = "\n".join(
             pytesseract.image_to_string(img, lang="spa+eng")
             for img in images
@@ -45,14 +48,14 @@ class PdfExtractionService:
         fallback_extractor: TextExtractor,
         hashing_service: HashingService | None = None,
     ):
-        self._primary  = primary_extractor
+        self._primary = primary_extractor
         self._fallback = fallback_extractor
-        self._hashing  = hashing_service or HashingService()
+        self._hashing = hashing_service or HashingService()
 
     def extract_text(self, pdf_bytes: bytes, filename: str) -> dict:
         pdf_hash = self._hashing.calculate_pdf_hash(pdf_bytes)
-
         text, page_count, method = self._try_primary(pdf_bytes)
+
         if not text:
             text, page_count, method = self._try_fallback(pdf_bytes)
 
@@ -69,20 +72,20 @@ class PdfExtractionService:
 
     def _normalize_text(self, text: str) -> str:
         normalized = unicodedata.normalize("NFC", text)
-        return re.sub(r'\n{3,}', '\n\n', normalized)
+        return re.sub(r"\n{3,}", "\n\n", normalized)
 
     def _try_primary(self, pdf_bytes: bytes) -> tuple[str, int, str]:
         try:
             text, pages = self._primary.extract(pdf_bytes)
             if len(text) >= settings.MIN_TEXT_LENGTH:
-                return text, pages, "pymupdf"
-            return "", pages, "pymupdf"
+                return text, pages, EXTRACTION_METHOD_PYMUPDF
+            return "", pages, EXTRACTION_METHOD_PYMUPDF
         except Exception:
-            return "", 0, "pymupdf"
+            return "", 0, EXTRACTION_METHOD_PYMUPDF
 
     def _try_fallback(self, pdf_bytes: bytes) -> tuple[str, int, str]:
         try:
             text, pages = self._fallback.extract(pdf_bytes)
-            return text, pages, "ocr"
+            return text, pages, EXTRACTION_METHOD_OCR
         except Exception as e:
-            raise ApplicationException(f"No se pudo extraer texto del PDF: {str(e)}")
+            raise ApplicationException(f"No se pudo extraer texto del PDF: {e}")
