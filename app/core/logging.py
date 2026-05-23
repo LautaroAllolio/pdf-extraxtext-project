@@ -1,19 +1,12 @@
-"""
-Configuración de logging estructurado para la aplicación.
-"""
-
 import logging
 import sys
 
 from app.core.config import get_settings
 
+_EXTERNAL_LOGGERS = ["uvicorn", "motor", "beanie"]
 
-def configure_logging():
-    """
-    Configura el sistema de logging de la aplicación.
 
-    Establece el nivel de logging y el formato de los mensajes.
-    """
+def configure_logging() -> None:
     settings = get_settings()
 
     logging.basicConfig(
@@ -22,6 +15,5 @@ def configure_logging():
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    # Reducir ruido de logs de librerías externas
-    logging.getLogger("uvicorn").setLevel(logging.WARNING)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    for logger_name in _EXTERNAL_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
