@@ -70,10 +70,22 @@ class BaseRepository(ABC, Generic[DocType]):
 
         Returns:
             La instancia creada del documento.
+
+        Raises:
+            ApplicationException: Si el documento ya existe (índice único duplicado).
         """
-        doc = self._document_model(**data)
-        await doc.insert()
-        return doc
+        from pymongo.errors import DuplicateKeyError
+        from app.core.exceptions import ApplicationException
+
+        try:
+            doc = self._document_model(**data)
+            await doc.insert()
+            return doc
+        except DuplicateKeyError as e:
+            raise ApplicationException(
+                message="El documento ya existe en la base de datos",
+                status_code=409,
+            ) from e
 
     async def update(self, doc: DocType, data: dict) -> DocType:
         """

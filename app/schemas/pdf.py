@@ -1,9 +1,6 @@
-"""Schemas Pydantic para operaciones con archivos PDF.
-
-DTOs para request/response de extracción y upload de documentos PDF.
-"""
-
 from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -12,24 +9,26 @@ class PdfExtractResponse(BaseModel):
 
     filename: str = Field(description="Nombre del archivo original")
     extracted_text: str = Field(description="Texto extraído del PDF")
-    extraction_method: str = Field(description="Método usado: 'pymupdf' o 'ocr'")
+    extraction_method: Literal["pymupdf", "ocr"] = Field(
+        description="Método usado para extraer el texto"
+    )
     page_count: int = Field(description="Cantidad de páginas procesadas")
-    pdf_hash: str = Field(default="", description="Hash SHA-256 del contenido binario del PDF")
-    text_hash: str = Field(default="", description="Hash SHA-256 del texto normalizado")
+    pdf_hash: str = Field(
+        default="", description="Hash SHA-256 del contenido binario del PDF"
+    )
+    text_hash: str = Field(
+        default="", description="Hash SHA-256 del texto normalizado"
+    )
 
 
 class PdfUploadResponse(BaseModel):
-    """DTO de respuesta del endpoint POST /api/v1/pdf/upload.
-
-    Representa un documento PDF persistido en MongoDB con su ID
-    asignado por la base de datos.
-    """
+    """DTO de respuesta para documentos PDF persistidos en MongoDB."""
 
     id: str = Field(description="ID único generado por MongoDB")
     filename: str = Field(description="Nombre del archivo subido")
     extracted_text: str = Field(description="Texto extraído del PDF")
-    extraction_method: str = Field(
-        description="Método de extracción: 'pymupdf' o 'ocr'"
+    extraction_method: Literal["pymupdf", "ocr"] = Field(
+        description="Método de extracción utilizado"
     )
     page_count: int = Field(description="Cantidad de páginas del documento")
     pdf_hash: str = Field(description="Hash SHA-256 del contenido binario del PDF")
@@ -38,10 +37,7 @@ class PdfUploadResponse(BaseModel):
 
 
 class PdfExtractorError(BaseModel):
-    """DTO de error en el proceso de extracción.
-
-    Estructura estandarizada para errores de validación o extracción.
-    """
+    """DTO de error en el proceso de extracción."""
 
     filename: str = Field(description="Nombre del archivo que causó el error")
     error: str = Field(description="Descripción del error ocurrido")
