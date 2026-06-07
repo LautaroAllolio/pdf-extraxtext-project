@@ -1,6 +1,6 @@
 services:
   api:
-    build: .
+    image: papersoul:v0.1.0
     container_name: papersoul-api
     restart: unless-stopped
     ports:
