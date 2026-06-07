@@ -98,4 +98,18 @@ class PdfRepository(BaseRepository[PdfDocument]):
         if not text_hash:
             return None
         return await self._document_model.find_one({"text_hash": text_hash})
+
+    async def get_all(self, skip: int = 0, limit: int = 100) -> list[PdfDocument]:
+        """Obtiene todos los documentos ordenados por fecha de subida descendente.
+
+        Args:
+            skip: Número de documentos a omitir.
+            limit: Número máximo de documentos a retornar.
+
+        Returns:
+            Lista de documentos ordenados por uploaded_at desc.
+        """
+        return await self._document_model.find().sort(
+            -self._document_model.uploaded_at
+        ).skip(skip).limit(limit).to_list()
         
