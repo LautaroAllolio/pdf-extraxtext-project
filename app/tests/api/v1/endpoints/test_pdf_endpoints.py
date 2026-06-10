@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 PDF_EXTRACT_URL = "/api/v1/pdfs/extract"
 PDF_LIST_URL = "/api/v1/pdfs"
+PDF_DETAIL_URL = "/api/v1/pdfs/{doc_id}"
 
 VALID_PDF = (
     b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
@@ -29,6 +30,13 @@ def _mock_repo_with_data(docs: list):
     """Devuelve un mock de PdfRepository con get_all configurado."""
     mock = AsyncMock()
     mock.get_all = AsyncMock(return_value=docs)
+    return mock
+
+
+def _mock_repo_with_get_by_id(doc):
+    """Devuelve un mock de PdfRepository con get_by_id configurado."""
+    mock = AsyncMock()
+    mock.get_by_id = AsyncMock(return_value=doc)
     return mock
 
 
@@ -171,3 +179,57 @@ async def test_get_all_pdfs_with_documents(async_client):
     # Orden descendente por uploaded_at: primero el más nuevo
     assert data[0]["filename"] == "doc2.pdf"
     assert data[1]["filename"] == "doc1.pdf"
+
+
+# =============================================================================
+# TESTS TDD PARA GET /api/v1/pdfs/{doc_id}
+# =============================================================================
+
+@pytest.mark.asyncio
+async def test_get_pdf_by_id_success(async_client):
+    """Retorna un PdfDocument existente por su ID de MongoDB."""
+    from datetime import datetime, timezone
+
+    mock_doc = AsyncMock()
+    mock_doc.id = "507f1f77bcf86cd799439011"
+    mock_doc.filename = "informe.pdf"
+    mock_doc.extracted_text = "Texto extraído del informe"
+    mock_doc.extraction_method = "pymupdf"
+    mock_doc.page_count = 5
+    mock_doc.pdf_hash = "abc123" * 8  # 64 chars simulados
+    mock_doc.text_hash = "def456" * 8
+    mock_doc.uploaded_at = datetime(2023, 8, 20, 14, 30, 0, tzinfo=timezone.utc)
+
+    with patch(
+        "app.api.v1.endpoints.pdf_documents.PdfRepository",
+        return_value=_mock_repo_with_get_by_id(mock_doc),
+    ):
+        response = await async_client.get(PDF_DETAIL_URL.format(doc_id="507f1f77bcf86cd799439011"))
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+
+    # Verifica estructura completa según PdfUploadResponse
+    assert data["id"] == "507f1f77bcf86cd799439011"
+    assert data["filename"] == "informe.pdf"
+    assert data["extracted_text"] == "Texto extraído del informe"
+    assert data["extraction_method"] == "pymupdf"
+    assert data["page_count"] == 5
+    assert data["pdf_hash"] == "abc123" * 8
+    assert data["text_hash"] == "def456" * 8
+    assert "uploaded_at" in data
+
+
+@pytest.mark.asyncio
+async def test_get_pdf_by_id_not_found(async_client):
+    """Retorna 404 cuando el doc_id no existe en la base de datos."""
+    with patch(
+        "app.api.v1.endpoints.pdf_documents.PdfRepository",
+        return_value=_mock_repo_with_get_by_id(None),
+    ):
+        response = await async_client.get(PDF_DETAIL_URL.format(doc_id="id_inexistente"))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    data = response.json()
+    assert "message" in data
+    assert "no encontrado" in data["message"].lower()

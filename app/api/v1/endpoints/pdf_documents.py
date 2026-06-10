@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+
+from app.core.exceptions import ResourceNotFoundException
 from app.repositories.pdf_repository import PdfRepository
 from app.schemas.pdf import PdfUploadResponse
 from app.models.pdf_document import PdfDocument
@@ -25,9 +27,17 @@ async def get_all_pdfs() -> list[PdfUploadResponse]:
     return [_build_upload_response(doc) for doc in documents]
 
 
-# TODO: Implementar GET /pdfs/{doc_id} para obtener un documento por su ID.
-#       Asignado a: equipo de desarrollo.
-#       Notas: Usar PdfRepository().get_by_id(doc_id) y retornar PdfUploadResponse.
+@router.get("/pdfs/{doc_id}", response_model=PdfUploadResponse)
+async def get_pdf_by_id(doc_id: str) -> PdfUploadResponse:
+    """Obtiene un documento PDF persistido por su ID de MongoDB."""
+    document = await PdfRepository().get_by_id(doc_id)
+
+    # 404 si el documento no existe en MongoDB
+    if not document:
+        raise ResourceNotFoundException("PdfDocument", doc_id)
+
+    return _build_upload_response(document)
+
 
 # TODO: Implementar DELETE /pdfs/{doc_id} para eliminar un documento por su ID.
 #       Asignado a: equipo de desarrollo.
