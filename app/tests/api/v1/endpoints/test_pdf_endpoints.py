@@ -233,3 +233,23 @@ async def test_get_pdf_by_id_not_found(async_client):
     data = response.json()
     assert "message" in data
     assert "no encontrado" in data["message"].lower()
+
+from unittest.mock import patch
+from app.repositories.pdf_repository import PdfRepository
+
+@pytest.mark.asyncio
+async def test_delete_pdf_exitoso(async_client):
+    doc_id = "507f1f77bcf86cd799439011"
+    with patch.object(PdfRepository, "delete_by_id", return_value=True) as mock_delete:
+        # URL corregida con "pdfs" 🚨
+        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}") 
+        assert response.status_code == 204
+
+@pytest.mark.asyncio
+async def test_delete_pdf_no_existe(async_client):
+    doc_id = "507f1f77bcf86cd799439011"
+    with patch.object(PdfRepository, "delete_by_id", return_value=False) as mock_delete:
+        # URL corregida con "pdfs" 🚨
+        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}") 
+        assert response.status_code == 404
+

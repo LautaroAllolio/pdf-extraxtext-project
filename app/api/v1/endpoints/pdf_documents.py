@@ -4,6 +4,8 @@ from app.core.exceptions import ResourceNotFoundException
 from app.repositories.pdf_repository import PdfRepository
 from app.schemas.pdf import PdfUploadResponse
 from app.models.pdf_document import PdfDocument
+from fastapi import HTTPException
+from fastapi.responses import Response
 
 router = APIRouter()
 
@@ -39,6 +41,11 @@ async def get_pdf_by_id(doc_id: str) -> PdfUploadResponse:
     return _build_upload_response(document)
 
 
-# TODO: Implementar DELETE /pdfs/{doc_id} para eliminar un documento por su ID.
-#       Asignado a: equipo de desarrollo.
-#       Notas: Usar PdfRepository().delete_by_id(doc_id) y retornar status 204 No Content.
+@router.delete("/pdfs/{doc_id}", status_code=204)
+async def delete_pdf(doc_id: str):
+    repo = PdfRepository()
+    deleted = await repo.delete_by_id(doc_id)
+    if not deleted:
+        from app.core.exceptions import ResourceNotFoundException
+        raise ResourceNotFoundException("PdfDocument", doc_id)
+    return Response(status_code=204)
