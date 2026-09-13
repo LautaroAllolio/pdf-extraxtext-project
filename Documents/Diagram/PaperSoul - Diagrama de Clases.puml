@@ -40,10 +40,6 @@ package "repositories" #DDEEFF {
     class PdfRepository {
         --
         +__init__()
-        +get_by_filename(filename: str): list[PdfDocument]
-        +get_by_extraction_method(method: str): list[PdfDocument]
-        +get_by_date_range(start: datetime, end: datetime): list[PdfDocument]
-        +get_latest(limit: int): list[PdfDocument]
         +get_by_pdf_hash(pdf_hash: str): PdfDocument | None
         +get_by_text_hash(text_hash: str): PdfDocument | None
     }
