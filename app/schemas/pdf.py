@@ -34,10 +34,3 @@ class PdfUploadResponse(BaseModel):
     pdf_hash: str = Field(description="Hash SHA-256 del contenido binario del PDF")
     text_hash: str = Field(description="Hash SHA-256 del texto normalizado")
     uploaded_at: datetime = Field(description="Timestamp de subida en UTC")
-
-
-class PdfExtractorError(BaseModel):
-    """DTO de error en el proceso de extracción."""
-
-    filename: str = Field(description="Nombre del archivo que causó el error")
-    error: str = Field(description="Descripción del error ocurrido")

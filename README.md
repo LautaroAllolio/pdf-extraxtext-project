@@ -103,15 +103,10 @@ cp .env.example .env
 | `API_V1_STR` | Prefijo de la API | `/api/v1` |
 | `MONGODB_URL` | URL de conexión a MongoDB | `mongodb://localhost:27017/fastapi_db` |
 | `MONGODB_DATABASE` | Nombre de la base de datos | `fastapi_db` |
-| `SECRET_KEY` | Clave secreta para JWT | — cambiar en producción — |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiración del token | `30` |
-| `ALGORITHM` | Algoritmo JWT | `HS256` |
 | `LOG_LEVEL` | Nivel de logging | `INFO` |
 | `MAX_FILE_SIZE_BYTES` | Tamaño máximo del PDF en MB | `50` |
 | `MIN_TEXT_LENGTH` | Mínimo de caracteres para considerar extracción exitosa | `10` |
 | `MIN_DPI` | DPI para conversión de imágenes en OCR | `300` |
-| `ROOT_USERNAME` | Usuario root de MongoDB | `admin` |
-| `ROOT_PASSWORD` | Contraseña root de MongoDB | — cambiar en producción — |
 
 ---
 
@@ -176,8 +171,6 @@ cp .env.example .env
 En el `.env`, configurá las credenciales de MongoDB:
 
 ```dotenv
-ROOT_USERNAME=admin
-ROOT_PASSWORD=tu_password_seguro
 MONGODB_URL=mongodb://admin:tu_password_seguro@mongodb:27017/?authSource=admin
 MONGODB_DATABASE=fastapi_db
 ```

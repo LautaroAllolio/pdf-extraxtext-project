@@ -1,5 +1,5 @@
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import get_settings
 from app.models.pdf_document import PdfDocument
@@ -19,10 +19,11 @@ async def init_database() -> None:
 
 
 async def close_database() -> None:
-    global _client
+    global _client, _database
     if _client:
         _client.close()
         _client = None
+    _database = None
 
 
 async def get_database() -> AsyncIOMotorDatabase:

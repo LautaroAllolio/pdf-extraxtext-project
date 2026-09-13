@@ -8,7 +8,6 @@ services:
     environment:
       MONGODB_URL: mongodb://${ROOT_USERNAME}:${ROOT_PASSWORD}@mongodb:27017/?authSource=admin
       MONGODB_DATABASE: ${MONGODB_DATABASE}
-      SECRET_KEY: ${SECRET_KEY}
       MAX_FILE_SIZE_BYTES: ${MAX_FILE_SIZE_BYTES}
       MIN_TEXT_LENGTH: ${MIN_TEXT_LENGTH}
       MIN_DPI: ${MIN_DPI}

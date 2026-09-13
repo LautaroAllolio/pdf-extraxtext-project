@@ -69,11 +69,6 @@ package "schemas" #EEFFDD {
         +text_hash: str
         +uploaded_at: datetime
     }
-
-    class PdfExtractorError {
-        +filename: str
-        +error: str
-    }
 }
 
 ' ─────────────────────────────────────────
@@ -148,7 +143,6 @@ package "core" #FFE0E0 {
         +MAX_FILE_SIZE_BYTES: int
         +MIN_TEXT_LENGTH: int
         +MIN_DPI: int
-        +SECRET_KEY: str
         +LOG_LEVEL: str
     }
 
@@ -164,19 +158,7 @@ package "core" #FFE0E0 {
         +__init__(resource_name, resource_id)
     }
 
-    class ValidationException {
-        --
-        +__init__(message)
-    }
-
-    class DuplicateResourceException {
-        --
-        +__init__(resource_name, field, value)
-    }
-
     ApplicationException <|-- ResourceNotFoundException
-    ApplicationException <|-- ValidationException
-    ApplicationException <|-- DuplicateResourceException
 }
 
 ' ─────────────────────────────────────────
