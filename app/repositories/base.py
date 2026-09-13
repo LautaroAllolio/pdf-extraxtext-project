@@ -9,9 +9,11 @@ from abc import ABC
 from typing import Generic, TypeVar
 
 from beanie import Document
-from beanie.operators import In
 from bson import ObjectId
+from bson.errors import InvalidId
+from pymongo.errors import DuplicateKeyError
 
+from app.core.exceptions import ApplicationException
 
 DocType = TypeVar("DocType", bound=Document)
 
@@ -45,7 +47,7 @@ class BaseRepository(ABC, Generic[DocType]):
         """
         try:
             return await self._document_model.get(ObjectId(doc_id))
-        except Exception:
+        except InvalidId:
             return None
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> list[DocType]:
@@ -74,9 +76,6 @@ class BaseRepository(ABC, Generic[DocType]):
         Raises:
             ApplicationException: Si el documento ya existe (índice único duplicado).
         """
-        from pymongo.errors import DuplicateKeyError
-        from app.core.exceptions import ApplicationException
-
         try:
             doc = self._document_model(**data)
             await doc.insert()
@@ -87,33 +86,6 @@ class BaseRepository(ABC, Generic[DocType]):
                 status_code=409,
             ) from e
 
-    async def update(self, doc: DocType, data: dict) -> DocType:
-        """
-        Actualiza un documento existente.
-
-        Args:
-            doc: Instancia del documento a actualizar.
-            data: Diccionario con los datos a actualizar.
-
-        Returns:
-            La instancia actualizada del documento.
-        """
-        for field, value in data.items():
-            if value is not None and hasattr(doc, field):
-                setattr(doc, field, value)
-
-        await doc.save()
-        return doc
-
-    async def delete(self, doc: DocType) -> None:
-        """
-        Elimina un documento de la base de datos.
-
-        Args:
-            doc: Instancia del documento a eliminar.
-        """
-        await doc.delete()
-
     async def delete_by_id(self, doc_id: str) -> bool:
         """
         Elimina un documento por su ID.
@@ -122,13 +94,13 @@ class BaseRepository(ABC, Generic[DocType]):
             doc_id: Identificador del documento a eliminar.
 
         Returns:
-            True si se eliminó correctamente, False si no existía.
+            True si se eliminó correctamente, False si no existía o el ID es inválido.
         """
         try:
             doc = await self.get_by_id(doc_id)
-            if doc:
-                await doc.delete()
-                return True
+        except InvalidId:
             return False
-        except Exception:
-            return False
+        if doc:
+            await doc.delete()
+            return True
+        return False

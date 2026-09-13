@@ -33,8 +33,6 @@ package "repositories" #DDEEFF {
         +get_by_id(id: str): T
         +get_all(): list[T]
         +create(data: dict): T
-        +update(document: T, data: dict): T
-        +delete(document: T): bool
     }
 
     class PdfRepository {
