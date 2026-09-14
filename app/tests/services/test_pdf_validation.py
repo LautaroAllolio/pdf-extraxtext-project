@@ -68,11 +68,8 @@ class TestPDFExistsValidation:
         # Arrange
         from app.services.pdf_validator import validate_file_exists
 
-        # Act - No debe lanzar excepción
-        result = validate_file_exists(valid_upload_file)
-
-        # Assert
-        assert result is True
+        # Act & Assert - No debe lanzar excepción
+        assert validate_file_exists(valid_upload_file) is None
 
 
 class TestPDFSizeValidation:
@@ -97,10 +94,7 @@ class TestPDFSizeValidation:
         from app.services.pdf_validator import validate_file_size
 
         # Act & Assert - No debe lanzar excepción
-        result = validate_file_size(valid_pdf_content)
-
-        # Assert
-        assert result is True
+        assert validate_file_size(valid_pdf_content) is None
 
     def test_should_raise_error_when_file_exceeds_50mb(self):
         """ROJO: Debe lanzar error cuando el archivo excede 50 MB."""
@@ -124,22 +118,16 @@ class TestPDFSizeValidation:
         MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB en bytes
         content_at_limit = b"x" * MAX_FILE_SIZE
 
-        # Act
-        result = validate_file_size(content_at_limit)
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_file_size(content_at_limit) is None
 
     def test_should_pass_when_file_is_under_50mb(self, valid_pdf_content):
         """ROJO: Debe pasar cuando el archivo es menor a 50 MB."""
         # Arrange
         from app.services.pdf_validator import validate_file_size
 
-        # Act
-        result = validate_file_size(valid_pdf_content)
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_file_size(valid_pdf_content) is None
 
 
 class TestPDFExtensionValidation:
@@ -161,22 +149,16 @@ class TestPDFExtensionValidation:
         # Arrange
         from app.services.pdf_validator import validate_file_extension
 
-        # Act
-        result = validate_file_extension("documento.pdf")
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_file_extension("documento.pdf") is None
 
     def test_should_pass_when_extension_is_pdf_uppercase(self):
         """ROJO: Debe pasar cuando la extensión es .PDF (mayúsculas)."""
         # Arrange
         from app.services.pdf_validator import validate_file_extension
 
-        # Act
-        result = validate_file_extension("documento.PDF")
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_file_extension("documento.PDF") is None
 
 
 class TestPDFHeaderValidation:
@@ -200,11 +182,8 @@ class TestPDFHeaderValidation:
         # Arrange
         from app.services.pdf_validator import validate_pdf_header
 
-        # Act
-        result = validate_pdf_header(valid_pdf_content)
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_pdf_header(valid_pdf_content) is None
 
 
 class TestPDFEncryptionValidation:
@@ -282,11 +261,8 @@ class TestPDFPagesValidation:
         mock_doc = MagicMock()
         mock_doc.page_count = 5
 
-        # Act
-        result = validate_has_pages(mock_doc)
-
-        # Assert
-        assert result is True
+        # Act & Assert
+        assert validate_has_pages(mock_doc) is None
 
 
 

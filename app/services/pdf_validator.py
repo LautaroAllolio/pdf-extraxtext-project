@@ -9,13 +9,12 @@ from app.core.config import get_settings
 settings = get_settings()
 
 
-def validate_file_exists(file: UploadFile) -> bool:
+def validate_file_exists(file: UploadFile) -> None:
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="Archivo no proporcionado o sin nombre")
-    return True
 
 
-def validate_file_size(content: bytes) -> bool:
+def validate_file_size(content: bytes) -> None:
     max_bytes = settings.MAX_FILE_SIZE_BYTES * 1024 * 1024
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="Archivo vacío")
@@ -24,19 +23,16 @@ def validate_file_size(content: bytes) -> bool:
             status_code=400,
             detail=f"Archivo excede el tamaño máximo de {settings.MAX_FILE_SIZE_BYTES} MB",
         )
-    return True
 
 
-def validate_file_extension(filename: str) -> bool:
+def validate_file_extension(filename: str) -> None:
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=400, detail="El archivo debe tener extensión .pdf")
-    return True
 
 
-def validate_pdf_header(content: bytes) -> bool:
+def validate_pdf_header(content: bytes) -> None:
     if not content.startswith(b"%PDF-"):
         raise HTTPException(status_code=400, detail="El archivo no tiene un header PDF válido")
-    return True
 
 
 def validate_not_encrypted(content: bytes) -> pymupdf.Document:
@@ -47,10 +43,9 @@ def validate_not_encrypted(content: bytes) -> pymupdf.Document:
     return doc
 
 
-def validate_has_pages(doc: Any) -> bool:
+def validate_has_pages(doc: Any) -> None:
     if doc.page_count < 1:
         raise HTTPException(status_code=400, detail="El PDF no tiene páginas")
-    return True
 
 
 def validate_has_text(doc: Any) -> bool:
