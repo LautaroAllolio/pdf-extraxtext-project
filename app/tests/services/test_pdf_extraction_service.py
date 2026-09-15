@@ -7,25 +7,6 @@ VALID_PDF_BYTES = b"%PDF- fake content"
 INVALID_PDF_BYTES = b"not a pdf"
 EMPTY_PDF_BYTES = b"%PDF- empty"
 
-def make_service(primary_result = None, fallback_result=None, primary_raises = False, fallback_raises = False):
-    """
-    simula los testeos  sin necesitar de los archivos pdf
-    """
-    primary = MagicMock()
-    fallback = MagicMock()
-
-    if primary_raises:
-        primary.extract.side_effect = Exception("PyMuPDF falló")
-    else:
-        primary.extract.return_value = primary_result or ("",0)
-
-    if fallback_raises:
-        fallback.extract.side_effect = Exception("OCR falló")
-    else:
-        fallback.extract.return_value = fallback_result or ("",0)
-
-    return PdfExtractionService(primary,fallback), primary, fallback
-
 #Extractor primario(PyMuPDF)--------------------------------------------------------------------------------
 def test_extract_text_pymupdf():
     """Extrae texto usando pymupdf"""
@@ -35,7 +16,7 @@ def test_extract_text_pymupdf():
     result =service. extract_text(VALID_PDF_BYTES, "test_pdf")
 
     assert result["extraction_method"] == "pymupdf"
-    assert result["extracted_text"]    == "Texto extraído correctamente",3
+    assert result["extracted_text"]    == "Texto extraído correctamente"
     assert result["page_count"]        == 3
     fallback.extract.assert_not_called()
 
@@ -100,7 +81,7 @@ def test_text_shorter():
     fallback.extract.assert_called_once()
 
 
-def text_pdf_vacio():
+def test_pdf_vacio():
     service, _, fallback = make_service(
         primary_result=("",0),
         fallback_result=("",0)
