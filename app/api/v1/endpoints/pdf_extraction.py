@@ -1,10 +1,15 @@
 from fastapi import APIRouter, UploadFile, File
-from app.repositories.pdf_repository import PdfRepository
-from app.schemas.pdf import PdfExtractResponse, PdfUploadResponse
-from app.services.pdf_extraction_service import PdfExtractionService, PyMuPdfExtractor, TesseractOcrExtractor
-from app.services.pdf_validator import validate_pdf_complete
-from app.services.hashing_service import HashingService
+
 from app.models.pdf_document import PdfDocument
+from app.repositories.pdf_repository import PdfRepository
+from app.schemas.pdf import PdfExtractResponse, PdfUploadResponse, build_upload_response
+from app.services.hashing_service import HashingService
+from app.services.pdf_extraction_service import (
+    PdfExtractionService,
+    PyMuPdfExtractor,
+    TesseractOcrExtractor,
+)
+from app.services.pdf_validator import validate_pdf_complete
 
 router = APIRouter()
 
@@ -15,28 +20,6 @@ _service = PdfExtractionService(
 _hashing = HashingService()
 
 
-def _build_response_from_document(document: PdfDocument) -> dict:
-    return {
-        "filename": document.filename,
-        "extracted_text": document.extracted_text,
-        "extraction_method": document.extraction_method,
-        "page_count": document.page_count,
-    }
-
-
-def _build_upload_response(document: PdfDocument) -> PdfUploadResponse:
-    return PdfUploadResponse(
-        id=str(document.id),
-        filename=document.filename,
-        extracted_text=document.extracted_text,
-        extraction_method=document.extraction_method,
-        page_count=document.page_count,
-        pdf_hash=document.pdf_hash,
-        text_hash=document.text_hash,
-        uploaded_at=document.uploaded_at,
-    )
-
-
 @router.post("/pdfs/extract", response_model=PdfExtractResponse)
 async def extract_pdf(file: UploadFile = File(...)):
     content = await file.read()
@@ -44,13 +27,13 @@ async def extract_pdf(file: UploadFile = File(...)):
 
     existing_by_pdf = await _find_duplicate_by_pdf_hash(content)
     if existing_by_pdf:
-        return _build_response_from_document(existing_by_pdf)
+        return build_upload_response(existing_by_pdf)
 
     result = _service.extract_text(content, file.filename)
 
     existing_by_text = await _find_duplicate_by_text_hash(result["text_hash"])
     if existing_by_text:
-        return _build_response_from_document(existing_by_text)
+        return build_upload_response(existing_by_text)
 
     await _persist_result(result)
     return result
