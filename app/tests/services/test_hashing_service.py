@@ -5,8 +5,8 @@ This file contains unit tests for the hashing service, ensuring its core logic
 functions correctly and consistently."""
 
 import pytest
-from app.services.hashing_service import HashingService
 
+from app.services.hashing_service import HashingService
 
 # =============================================================================
 # FIXTURES
@@ -151,7 +151,7 @@ class TestTextHashNormalization:
         assert hash1 == hash2, "Multiple spaces should be collapsed"
 
     def test_text_hash_collapses_tabs_and_newlines(self, hashing_service):
-        """
+        r"""
         Test #5b: Tabs y newlines también se colapsan como espacios.
 
         Cualquier whitespace (\s+) se convierte en un espacio simple.

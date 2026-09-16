@@ -1,9 +1,13 @@
-import pytest
-from fastapi import status
+from datetime import UTC
 from unittest.mock import AsyncMock, patch
 
-PDF_EXTRACT_URL = "/api/v1/pdfs/extract"
+import pytest
+from fastapi import status
+
+from app.repositories.pdf_repository import PdfRepository
+
 PDF_LIST_URL = "/api/v1/pdfs"
+PDF_EXTRACT_URL = "/api/v1/pdfs/extract"
 PDF_DETAIL_URL = "/api/v1/pdfs/{doc_id}"
 
 VALID_PDF = (
@@ -136,7 +140,7 @@ async def test_get_all_pdfs_empty(async_client):
 @pytest.mark.asyncio
 async def test_get_all_pdfs_with_documents(async_client):
     """Retorna lista de documentos en formato PdfUploadResponse."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     mock_doc_older = AsyncMock()
     mock_doc_older.id = "507f1f77bcf86cd799439011"
@@ -146,7 +150,7 @@ async def test_get_all_pdfs_with_documents(async_client):
     mock_doc_older.page_count = 1
     mock_doc_older.pdf_hash = "hash_pdf_1"
     mock_doc_older.text_hash = "hash_text_1"
-    mock_doc_older.uploaded_at = datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    mock_doc_older.uploaded_at = datetime(2023, 1, 1, 12, 0, 0, tzinfo=UTC)
 
     mock_doc_newer = AsyncMock()
     mock_doc_newer.id = "507f1f77bcf86cd799439012"
@@ -156,7 +160,7 @@ async def test_get_all_pdfs_with_documents(async_client):
     mock_doc_newer.page_count = 2
     mock_doc_newer.pdf_hash = "hash_pdf_2"
     mock_doc_newer.text_hash = "hash_text_2"
-    mock_doc_newer.uploaded_at = datetime(2023, 6, 15, 10, 30, 0, tzinfo=timezone.utc)
+    mock_doc_newer.uploaded_at = datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
 
     with patch("app.api.v1.endpoints.pdf_documents.PdfRepository", return_value=_mock_repo_with_data([mock_doc_newer, mock_doc_older])):
         response = await async_client.get(PDF_LIST_URL)
@@ -189,7 +193,7 @@ async def test_get_all_pdfs_with_documents(async_client):
 @pytest.mark.asyncio
 async def test_get_pdf_by_id_success(async_client):
     """Retorna un PdfDocument existente por su ID de MongoDB."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     mock_doc = AsyncMock()
     mock_doc.id = "507f1f77bcf86cd799439011"
@@ -199,7 +203,7 @@ async def test_get_pdf_by_id_success(async_client):
     mock_doc.page_count = 5
     mock_doc.pdf_hash = "abc123" * 8  # 64 chars simulados
     mock_doc.text_hash = "def456" * 8
-    mock_doc.uploaded_at = datetime(2023, 8, 20, 14, 30, 0, tzinfo=timezone.utc)
+    mock_doc.uploaded_at = datetime(2023, 8, 20, 14, 30, 0, tzinfo=UTC)
 
     with patch(
         "app.api.v1.endpoints.pdf_documents.PdfRepository",
@@ -235,22 +239,19 @@ async def test_get_pdf_by_id_not_found(async_client):
     assert "message" in data
     assert "no encontrado" in data["message"].lower()
 
-from unittest.mock import patch
-from app.repositories.pdf_repository import PdfRepository
-
 @pytest.mark.asyncio
 async def test_delete_pdf_exitoso(async_client):
     doc_id = "507f1f77bcf86cd799439011"
-    with patch.object(PdfRepository, "delete_by_id", return_value=True) as mock_delete:
+    with patch.object(PdfRepository, "delete_by_id", return_value=True) as _mock_delete:
         # URL corregida con "pdfs" 🚨
-        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}") 
+        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}")
         assert response.status_code == 204
 
 @pytest.mark.asyncio
 async def test_delete_pdf_no_existe(async_client):
     doc_id = "507f1f77bcf86cd799439011"
-    with patch.object(PdfRepository, "delete_by_id", return_value=False) as mock_delete:
+    with patch.object(PdfRepository, "delete_by_id", return_value=False) as _mock_delete:
         # URL corregida con "pdfs" 🚨
-        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}") 
+        response = await async_client.delete(f"/api/v1/pdfs/{doc_id}")
         assert response.status_code == 404
 

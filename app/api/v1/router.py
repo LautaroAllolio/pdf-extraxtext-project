@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import pdf_extraction, pdf_documents
+
+from app.api.v1.endpoints import pdf_documents, pdf_extraction
 
 api_router = APIRouter()
 

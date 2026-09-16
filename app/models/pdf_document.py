@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 
 from beanie import Document
 from pydantic import Field
-from pymongo import IndexModel, ASCENDING
+from pymongo import ASCENDING, IndexModel
 
 
 class PdfDocument(Document):
@@ -16,7 +16,7 @@ class PdfDocument(Document):
     pdf_hash: str | None = None
     text_hash: str | None = None
     uploaded_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(UTC)
     )
 
     class Settings:

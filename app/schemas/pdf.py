@@ -34,7 +34,7 @@ class PdfUploadResponse(BaseModel):
     pdf_hash: str = Field(description="Hash SHA-256 del contenido binario del PDF")
     text_hash: str = Field(description="Hash SHA-256 del texto normalizado")
     uploaded_at: datetime = Field(description="Timestamp de subida en UTC")
-    
+
 def build_upload_response(document) -> "PdfUploadResponse":
     """Construye un PdfUploadResponse a partir de un PdfDocument de MongoDB."""
     return PdfUploadResponse(

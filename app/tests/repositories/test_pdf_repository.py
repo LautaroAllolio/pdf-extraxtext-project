@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestGetByPdfHash:
@@ -89,9 +90,8 @@ class TestGetById:
         with patch(
             "app.repositories.pdf_repository.PdfDocument.get",
             new=AsyncMock(side_effect=ConnectionError("base de datos no disponible"))
-        ):
-            with pytest.raises(ConnectionError):
-                await repo.get_by_id("507f1f77bcf86cd799439011")
+        ), pytest.raises(ConnectionError):
+            await repo.get_by_id("507f1f77bcf86cd799439011")
 
 class TestDeleteById:
 
@@ -110,6 +110,5 @@ class TestDeleteById:
         with patch(
             "app.repositories.pdf_repository.PdfDocument.get",
             new=AsyncMock(side_effect=ConnectionError("base de datos no disponible"))
-        ):
-            with pytest.raises(ConnectionError):
-                await repo.delete_by_id("507f1f77bcf86cd799439011")
+        ), pytest.raises(ConnectionError):
+            await repo.delete_by_id("507f1f77bcf86cd799439011")

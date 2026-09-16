@@ -1,7 +1,7 @@
-import pytest
-from io import BytesIO
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
+
 import pymupdf
+import pytest
 
 
 @pytest.fixture
@@ -64,11 +64,11 @@ class TestPDFSizeValidation:
         assert validate_file_size(valid_pdf_content) is None
 
     def test_should_raise_error_when_file_exceeds_50mb(self):
-        from app.services.pdf_validator import validate_file_size
         from app.core.config import get_settings
+        from app.services.pdf_validator import validate_file_size
 
-        MAX_FILE_SIZE = get_settings().MAX_FILE_SIZE_BYTES * 1024 * 1024
-        oversized_content = b"x" * (MAX_FILE_SIZE + 1)  
+        MAX_FILE_SIZE = get_settings().MAX_FILE_SIZE_BYTES * 1024 * 1024 # noqa: N806
+        oversized_content = b"x" * (MAX_FILE_SIZE + 1)
 
         with pytest.raises(Exception) as exc_info:
             validate_file_size(oversized_content)
@@ -76,10 +76,10 @@ class TestPDFSizeValidation:
         assert "50 mb" in str(exc_info.value).lower() or "excede" in str(exc_info.value).lower()
 
     def test_should_pass_when_file_is_at_50mb(self):
-        from app.services.pdf_validator import validate_file_size
         from app.core.config import get_settings
+        from app.services.pdf_validator import validate_file_size
 
-        MAX_FILE_SIZE = get_settings().MAX_FILE_SIZE_BYTES * 1024 * 1024
+        MAX_FILE_SIZE = get_settings().MAX_FILE_SIZE_BYTES * 1024 * 1024 # noqa: N806
         content_at_limit = b"x" * MAX_FILE_SIZE
 
         assert validate_file_size(content_at_limit) is None
@@ -216,9 +216,9 @@ class TestPDFCompleteValidation:
         from app.services.pdf_validator import validate_pdf_complete
 
         invalid_file = Mock()
-        invalid_file.filename = ""  
+        invalid_file.filename = ""
 
-        with pytest.raises(Exception):1
+        with pytest.raises(Exception): # noqa: B017
             validate_pdf_complete(invalid_file, b"")
 
     def test_should_pass_for_scanned_pdf_without_text(self, monkeypatch):

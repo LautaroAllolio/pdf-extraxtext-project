@@ -1,8 +1,8 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile
 
 from app.models.pdf_document import PdfDocument
 from app.repositories.pdf_repository import PdfRepository
-from app.schemas.pdf import PdfExtractResponse, PdfUploadResponse, build_upload_response
+from app.schemas.pdf import PdfExtractResponse, build_upload_response
 from app.services.hashing_service import HashingService
 from app.services.pdf_extraction_service import (
     PdfExtractionService,
@@ -21,7 +21,7 @@ _hashing = HashingService()
 
 
 @router.post("/pdfs/extract", response_model=PdfExtractResponse)
-async def extract_pdf(file: UploadFile = File(...)):
+async def extract_pdf(file: UploadFile = File(...)): # noqa: B008
     content = await file.read()
     validate_pdf_complete(file, content)
 

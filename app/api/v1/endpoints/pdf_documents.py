@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import Response
 
 from app.core.exceptions import ResourceNotFoundException
-from app.models.pdf_document import PdfDocument
 from app.repositories.pdf_repository import PdfRepository
 from app.schemas.pdf import PdfUploadResponse, build_upload_response
 

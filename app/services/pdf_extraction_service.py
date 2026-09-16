@@ -1,9 +1,11 @@
 import re
-import pymupdf
 import unicodedata
 from typing import Protocol, runtime_checkable
-from app.core.exceptions import ApplicationException
+
+import pymupdf
+
 from app.core.config import get_settings
+from app.core.exceptions import ApplicationException
 from app.services.hashing_service import HashingService
 
 settings = get_settings()
@@ -88,4 +90,4 @@ class PdfExtractionService:
             text, pages = self._fallback.extract(pdf_bytes)
             return text, pages, EXTRACTION_METHOD_OCR
         except Exception as e:
-            raise ApplicationException(f"No se pudo extraer texto del PDF: {e}")
+            raise ApplicationException(f"No se pudo extraer texto del PDF: {e}") from e

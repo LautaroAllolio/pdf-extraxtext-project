@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
-from app.services.pdf_extraction_service import PdfExtractionService
+
+import pytest
+
 from app.core.exceptions import ApplicationException
+from app.services.pdf_extraction_service import PdfExtractionService
 
 VALID_PDF_BYTES = b"%PDF- fake content"
 INVALID_PDF_BYTES = b"not a pdf"
@@ -33,7 +35,7 @@ def test_ocr_if_pymupdf_doesnt_extract():
     #PyMuPDF devuelve vacío por lo que pasa a OCR
     service, primary, fallback = make_service(
         primary_result=("",1 ),
-        fallback_result=("Texto OCR", 1)          
+        fallback_result=("Texto OCR", 1)
     )
     result = service.extract_text(VALID_PDF_BYTES, "escaneado.pdf")
 
@@ -69,10 +71,10 @@ def test_text_shorter():
     """
     Si PyMuPDF extrae menos de MIN_TEXT_LENGTH chars,(menos de 10 caracteres)
     se considera vacío y activa el OCR
-    
+
     """
     service, _, fallback = make_service(
-        primary_result=("abc", 1),             
+        primary_result=("abc", 1),
         fallback_result=("Texto completo del OCR",1)
     )
     result = service.extract_text(VALID_PDF_BYTES, "corto.pdf")
@@ -86,7 +88,7 @@ def test_pdf_vacio():
         primary_result=("",0),
         fallback_result=("",0)
     )
-    result = service.extract_text(EMPTY_PDF_BYTES, "vacio.pdf")
+    _ =  service.extract_text(EMPTY_PDF_BYTES, "vacio.pdf")
     fallback.extract.assert_called_once()
 
 
