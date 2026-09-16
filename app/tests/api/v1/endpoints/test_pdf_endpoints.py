@@ -92,7 +92,8 @@ async def test_extract_pdf_header_invalido(async_client):
 @pytest.mark.asyncio
 async def test_extract_pdf_supera_50mb(async_client):
     """Archivo mayor a 50 MB retorna 400."""
-    contenido_grande = b"%PDF-" + b"x" * (50 * 1024 * 1024 + 1)
+    from app.core.config import get_settings
+    contenido_grande = b"%PDF-" + b"x" * (get_settings().MAX_FILE_SIZE_BYTES * 1024 * 1024 + 1)
     response = await async_client.post(
         PDF_EXTRACT_URL,
         files={"file": ("grande.pdf", contenido_grande, "application/pdf")},

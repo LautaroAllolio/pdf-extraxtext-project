@@ -1,21 +1,8 @@
 """
-Tests TDD para HashingService - Tests Unitarios.
+Unit tests for the HashingService.
 
-Este archivo contiene los tests unitarios del servicio de hashing.
-NO requiere conexión a base de datos - solo pruebas puras de lógica.
-
-Patrón: TDD Vertical Slices (1 test → código mínimo → siguiente test)
-
-Slices implementados:
-    1. Hash de PDF válido → 64 chars hex
-    2. ValueError si pdf_bytes=None
-    3. ValueError si pdf_bytes vacío
-    4. Hash de texto normalizado (lowercase)
-    5. Colapsar espacios en texto
-    6. Consistencia: mismo texto = mismo hash
-    7. ValueError si text=None
-    8. ValueError si text vacío
-"""
+This file contains unit tests for the hashing service, ensuring its core logic
+functions correctly and consistently."""
 
 import pytest
 from app.services.hashing_service import HashingService
@@ -277,11 +264,10 @@ class TestPdfVsTextHash:
 
     def test_pdf_and_text_hash_can_be_equal_for_same_content(self, hashing_service):
         """
-        El hash de un PDF y su texto pueden ser iguales para el mismo contenido.
-
-        Cuando el contenido binario del PDF es idéntico a la representación
-        UTF-8 del texto normalizado, ambos producen el mismo hash SHA-256.
-        Esto demuestra la propiedad de determinismo del algoritmo.
+        Verifica que el hash de un PDF y el hash de un texto pueden ser iguales si
+        el contenido binario del PDF coincide con los bytes del texto después
+        de su normalización y codificación. Esto demuestra la consistencia de los
+        métodos de hashing para entradas equivalentes.
         """
         pdf_content = b"contenido"
         text_content = "contenido"

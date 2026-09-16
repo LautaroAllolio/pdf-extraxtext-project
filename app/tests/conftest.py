@@ -5,14 +5,6 @@ from httpx import ASGITransport, AsyncClient
 from app.main import app
 
 
-@pytest.fixture(scope="session")
-def test_database():
-    # Test database (vacio)
-    return {
-        "client": None,
-        "db": None,
-        "info": "placeholder – conectar MongoDB de test cuando esté listo",
-    }
 
 
 @pytest_asyncio.fixture()
